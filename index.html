@@ -1,197 +1,263 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<title>Beginner Friendly Shooter</title>
-<style>
-  body { margin: 0; background: #000; color: #fff; font-family: sans-serif; }
-  canvas { display: block; margin: auto; background: #000; }
-</style>
-</head>
-<body>
+// =====================
+// 初期設定
+// =====================
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-<canvas id="game" width="480" height="640"></canvas>
+canvas.width = 800;
+canvas.height = 600;
 
-<script>
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
-
-let state = "tutorial"; // tutorial, play, gameover
-let frame = 0;
-
-// ================== プレイヤー ==================
-const player = {
-  x: 220,
-  y: 560,
-  w: 40,
-  h: 20,
-  speed: 5
+// =====================
+// 難易度設定
+// =====================
+const difficultySettings = {
+    easy: { name: 'EASY', invaderBaseSpeed: 0.5, invaderSpeedIncrease: 0.1 },
+    normal: { name: 'NORMAL', invaderBaseSpeed: 1, invaderSpeedIncrease: 0.2 },
+    hard: { name: 'HARD', invaderBaseSpeed: 1.5, invaderSpeedIncrease: 0.3 }
 };
 
-// ================== 入力 ==================
-const keys = {};
-document.addEventListener("keydown", e => keys[e.key] = true);
-document.addEventListener("keyup", e => keys[e.key] = false);
+// =====================
+// ゲーム状態
+// =====================
+const gameState = {
+    difficulty: 'normal',
+    score: 0,
+    wave: 1,
+    gameOver: false,
 
-// ================== 弾 ==================
-const bullets = [];
-const enemyBullets = [];
+    player: {
+        x: 370,
+        y: 540,
+        width: 60,
+        height: 20,
+        speed: 6,
+        health: 100,
+        maxHealth: 100,
+        shield: false,
+        weapon: 'normal'
+    },
 
-// ================== 敵 ==================
-const enemies = [];
-function spawnEnemies() {
-  enemies.length = 0;
-  for (let i = 0; i < 5; i++) {
-    enemies.push({ x: 60 + i * 70, y: 80, alive: true });
-  }
-}
-spawnEnemies();
+    bullets: [],
+    invaderBullets: [],
+    invaders: [],
+    powerUps: [],
+    particles: [],
+    stars: [],
+    invaderDirection: 1,
+    invaderSpeed: 1
+};
 
-// ================== スコア ==================
-let score = 0;
-let hiScore = localStorage.getItem("hiscore") || 0;
-
-// ================== パワーアップ ==================
-let powerUp = null;
-let powerTimer = 0;
-
-// ================== チュートリアル ==================
-function drawTutorial() {
-  ctx.fillStyle = "white";
-  ctx.font = "18px sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("← → で移動", 240, 300);
-  ctx.fillText("SPACE でショット", 240, 330);
-  ctx.fillText("3秒後にスタート！", 240, 370);
-}
-
-// ================== 更新 ==================
-function update() {
-  frame++;
-
-  if (state === "tutorial" && frame > 180) {
-    state = "play";
-  }
-
-  if (state !== "play") return;
-
-  // 移動
-  if (keys["ArrowLeft"]) player.x -= player.speed;
-  if (keys["ArrowRight"]) player.x += player.speed;
-
-  // 発射
-  if (keys[" "] && frame % 10 === 0) {
-    bullets.push({ x: player.x + 18, y: player.y });
-  }
-
-  // 弾移動
-  bullets.forEach(b => b.y -= 6);
-  enemyBullets.forEach(b => b.y += 3);
-
-  // 敵の攻撃（最初の5秒は控えめ）
-  if (frame % (frame < 300 ? 120 : 60) === 0) {
-    enemies.forEach(e => {
-      if (e.alive) {
-        enemyBullets.push({ x: e.x + 15, y: e.y });
-      }
-    });
-  }
-
-  // 当たり判定
-  bullets.forEach(b => {
-    enemies.forEach(e => {
-      if (e.alive &&
-          b.x > e.x && b.x < e.x + 30 &&
-          b.y > e.y && b.y < e.y + 20) {
-        e.alive = false;
-        score += 100;
-      }
-    });
-  });
-
-  enemyBullets.forEach(b => {
-    if (b.x > player.x && b.x < player.x + player.w &&
-        b.y > player.y && b.y < player.y + player.h) {
-      state = "gameover";
-      if (score > hiScore) {
-        hiScore = score;
-        localStorage.setItem("hiscore", hiScore);
-      }
+// =====================
+// 初期生成
+// =====================
+function createStars() {
+    gameState.stars = [];
+    for (let i = 0; i < 100; i++) {
+        gameState.stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 2 + 1
+        });
     }
-  });
-
-  // パワーアップ取得
-  if (!powerUp && frame % 600 === 0) {
-    powerUp = { x: 230, y: 300 };
-  }
-
-  if (powerUp &&
-      powerUp.x > player.x && powerUp.x < player.x + player.w &&
-      powerUp.y > player.y && powerUp.y < player.y + player.h) {
-    powerUp = null;
-    powerTimer = 300;
-  }
-
-  if (powerTimer > 0) powerTimer--;
 }
 
-// ================== 描画 ==================
+function createInvaders() {
+    gameState.invaders = [];
+    const rows = 4;
+    const cols = 10;
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            gameState.invaders.push({
+                x: 80 + c * 60,
+                y: 50 + r * 50,
+                width: 40,
+                height: 30,
+                alive: true,
+                type: r % 3
+            });
+        }
+    }
+}
+
+function startGame(diff) {
+    gameState.difficulty = diff;
+    gameState.score = 0;
+    gameState.wave = 1;
+    gameState.gameOver = false;
+    gameState.player.health = gameState.player.maxHealth;
+    gameState.player.weapon = 'normal';
+    gameState.player.shield = false;
+
+    const settings = difficultySettings[diff];
+    gameState.invaderSpeed = settings.invaderBaseSpeed;
+
+    gameState.bullets = [];
+    gameState.invaderBullets = [];
+    gameState.powerUps = [];
+    gameState.particles = [];
+
+    createStars();
+    createInvaders();
+    updateUI();
+}
+
+// =====================
+// 入力
+// =====================
+const keys = {};
+window.addEventListener('keydown', e => keys[e.key] = true);
+window.addEventListener('keyup', e => keys[e.key] = false);
+
+// =====================
+// パワーアップ
+// =====================
+function spawnPowerUp(x, y) {
+    const types = ['health', 'shield', 'triple', 'laser'];
+    gameState.powerUps.push({
+        x, y,
+        width: 20,
+        height: 20,
+        type: types[Math.floor(Math.random() * types.length)],
+        speed: 2
+    });
+}
+
+// =====================
+// 更新処理
+// =====================
+function update() {
+    if (gameState.gameOver) return;
+
+    // プレイヤー移動
+    if (keys['ArrowLeft']) gameState.player.x -= gameState.player.speed;
+    if (keys['ArrowRight']) gameState.player.x += gameState.player.speed;
+
+    gameState.player.x = Math.max(
+        0,
+        Math.min(canvas.width - gameState.player.width, gameState.player.x)
+    );
+
+    // 弾更新
+    gameState.bullets = gameState.bullets.filter(b => {
+        b.y -= b.speed;
+        return b.y > 0;
+    });
+
+    gameState.invaderBullets = gameState.invaderBullets.filter(b => {
+        b.y += b.speed;
+        return b.y < canvas.height;
+    });
+
+    // インベーダー移動
+    let edgeHit = false;
+    gameState.invaders.forEach(inv => {
+        if (!inv.alive) return;
+        inv.x += gameState.invaderSpeed * gameState.invaderDirection;
+        if (inv.x <= 0 || inv.x + inv.width >= canvas.width) {
+            edgeHit = true;
+        }
+    });
+
+    if (edgeHit) {
+        gameState.invaderDirection *= -1;
+        gameState.invaders.forEach(inv => inv.y += 20);
+    }
+
+    // 衝突判定
+    gameState.bullets.forEach(bullet => {
+        gameState.invaders.forEach(invader => {
+            if (!invader.alive) return;
+
+            if (
+                bullet.x < invader.x + invader.width &&
+                bullet.x + bullet.width > invader.x &&
+                bullet.y < invader.y + invader.height &&
+                bullet.y + bullet.height > invader.y
+            ) {
+                invader.alive = false;
+                bullet.y = -100;
+                gameState.score += 10;
+
+                if (Math.random() < 0.2) {
+                    spawnPowerUp(
+                        invader.x + invader.width / 2,
+                        invader.y + invader.height / 2
+                    );
+                }
+            }
+        });
+    });
+
+    // ウェーブクリア
+    if (gameState.invaders.every(i => !i.alive)) {
+        gameState.wave++;
+        gameState.score += gameState.wave * 100;
+
+        const s = difficultySettings[gameState.difficulty];
+        gameState.invaderSpeed =
+            s.invaderBaseSpeed + gameState.wave * s.invaderSpeedIncrease;
+
+        createInvaders();
+        updateUI();
+    }
+}
+
+// =====================
+// 描画
+// =====================
 function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // プレイヤー
-  ctx.fillStyle = "cyan";
-  ctx.fillRect(player.x, player.y, player.w, player.h);
+    // 星
+    ctx.fillStyle = '#fff';
+    gameState.stars.forEach(s => ctx.fillRect(s.x, s.y, s.size, s.size));
 
-  // 敵
-  ctx.fillStyle = "lime";
-  enemies.forEach(e => e.alive && ctx.fillRect(e.x, e.y, 30, 20));
+    // プレイヤー
+    ctx.fillStyle = gameState.player.shield ? '#0ff' : '#0f0';
+    ctx.fillRect(
+        gameState.player.x,
+        gameState.player.y,
+        gameState.player.width,
+        gameState.player.height
+    );
 
-  // 弾
-  ctx.fillStyle = "yellow";
-  bullets.forEach(b => ctx.fillRect(b.x, b.y, 4, 8));
+    // 弾
+    ctx.fillStyle = '#0ff';
+    gameState.bullets.forEach(b =>
+        ctx.fillRect(b.x, b.y, b.width, b.height)
+    );
 
-  ctx.fillStyle = "red";
-  enemyBullets.forEach(b => ctx.fillRect(b.x, b.y, 6, 10));
-
-  // パワーアップ
-  if (powerUp) {
-    ctx.fillStyle = "orange";
-    ctx.fillRect(powerUp.x, powerUp.y, 20, 20);
-  }
-
-  // UI
-  ctx.fillStyle = "white";
-  ctx.font = "14px sans-serif";
-  ctx.textAlign = "left";
-  ctx.fillText("SCORE: " + score, 10, 20);
-  ctx.fillText("HI: " + hiScore, 10, 40);
-
-  if (powerTimer > 0) {
-    ctx.fillText("三方向ショット！", 300, 20);
-    ctx.fillRect(300, 30, powerTimer / 2, 6);
-  }
-
-  if (state === "tutorial") drawTutorial();
-
-  if (state === "gameover") {
-    ctx.textAlign = "center";
-    ctx.font = "24px sans-serif";
-    ctx.fillText("GAME OVER", 240, 300);
-    ctx.font = "16px sans-serif";
-    ctx.fillText("SCORE: " + score, 240, 340);
-    ctx.fillText("HI SCORE: " + hiScore, 240, 370);
-    ctx.fillText("F5でリスタート", 240, 420);
-  }
+    // 敵
+    gameState.invaders.forEach(inv => {
+        if (!inv.alive) return;
+        const colors = ['#f0f', '#ff0', '#0ff'];
+        ctx.fillStyle = colors[inv.type];
+        ctx.fillRect(inv.x, inv.y, inv.width, inv.height);
+    });
 }
 
-// ================== ループ ==================
-function loop() {
-  update();
-  draw();
-  requestAnimationFrame(loop);
+// =====================
+// UI
+// =====================
+function updateUI() {
+    document.getElementById('score').textContent = gameState.score;
+    document.getElementById('wave').textContent = gameState.wave;
+    document.getElementById('healthFill').style.width =
+        (gameState.player.health / gameState.player.maxHealth) * 100 + '%';
 }
-loop();
-</script>
-</body>
-</html>
+
+// =====================
+// ゲームループ
+// =====================
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+// =====================
+// スタート
+// =====================
+startGame('normal');
+gameLoop();
