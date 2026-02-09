@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>スペースインベーダー ULTIMATE</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: radial-gradient(ellipse at center, #1a1a2e 0%, #0f0f1e 100%);
+            font-family: 'Orbitron', 'Arial', sans-serif;
+            color: #fff;
+            overflow: hidden;
+        }
+        #gameContainer {
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.5);
+        }
+        canvas {
+            display: block;
+            background: #000;
+            border: 3px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+        #ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 15px 20px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+        }
+        .stat {
+            font-size: 20px;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .stat-label {
+            color: #0ff;
+            font-weight: bold;
+        }
+        #healthBar {
+            width: 150px;
+            height: 20px;
+            background: rgba(255, 0, 0, 0.3);
+            border: 2px solid #f00;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        #healthFill {
+            height: 100%;
+            background: linear-gradient(to right, #ff0000, #ff6600);
+            transition: width 0.3s;
+            box-shadow: 0 0 10px #f00;
+        }
+        #gameOver, #startScreen, #difficultyScreen, #tutorialScreen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px;
+            border-radius: 20px;
+            border: 3px solid #0ff;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            pointer-events: all;
+        }
+        #gameOver, #difficultyScreen, #tutorialScreen {
+            display: none;
+        }
+        #tutorialScreen {
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            text-align: left;
+        }
+        .tutorial-section {
+            margin: 25px 0;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.05);
+            border-left: 4px solid #0ff;
+            border-radius: 10px;
+        }
+        .tutorial-section h2 {
+            color: #0ff;
+            margin-bottom: 15px;
+            font-size: 24px;
+            text-align: center;
+        }
+        .tutorial-section h3 {
+            color: #ff0;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        .controls-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .control-key {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            color: #0ff;
+            border: 2px solid #0ff;
+            text-align: center;
+        }
+        .control-desc {
+            padding: 8px;
+            color: #fff;
+        }
+        .enemy-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+        .enemy-visual {
+            width: 60px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+        .enemy-details {
+            flex: 1;
+        }
+        .enemy-name {
+            font-weight: bold;
+            color: #ff0;
+            font-size: 16px;
+        }
+        .enemy-description {
+            color: #aaa;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .powerup-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .powerup-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid;
+        }
+        .powerup-health { border-color: #0f0; }
+        .powerup-shield { border-color: #0ff; }
+        .powerup-triple { border-color: #ff0; }
+        .powerup-laser { border-color: #f0f; }
+        .powerup-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .powerup-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+        .powerup-effect {
+            font-size: 13px;
+            color: #aaa;
+        }
+        .tips-list {
+            list-style: none;
+            padding: 0;
+        }
+        .tips-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        .tips-list li:before {
+            content: "💡";
+            position: absolute;
+            left: 0;
+        }
+        .scroll-hint {
+            text-align: center;
+            color: #0ff;
+            font-size: 14px;
+            margin-top: 20px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        .difficulty-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+            max-width: 700px;
+        }
+        .difficulty-btn {
+            padding: 25px 15px;
+            font-size: 18px;
+            border: 3px solid;
+            border-radius: 15px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        .difficulty-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        .difficulty-btn:hover::before {
+            left: 100%;
+        }
+        .difficulty-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px;
+        }
+        .difficulty-beginner {
+            border-color: #0f0;
+            color: #0f0;
+        }
+        .difficulty-beginner:hover {
+            background: rgba(0, 255, 0, 0.2);
+            box-shadow: 0 0 30px #0f0;
+        }
+        .difficulty-intermediate {
+            border-color: #ff0;
+            color: #ff0;
+        }
+        .difficulty-intermediate:hover {
+            background: rgba(255, 255, 0, 0.2);
+            box-shadow: 0 0 30px #ff0;
+        }
+        .difficulty-advanced {
+            border-color: #f60;
+            color: #f60;
+        }
+        .difficulty-advanced:hover {
+            background: rgba(255, 102, 0, 0.2);
+            box-shadow: 0 0 30px #f60;
+        }
+        .difficulty-extreme {
+            border-color: #f00;
+            color: #f00;
+        }
+        .difficulty-extreme:hover {
+            background: rgba(255, 0, 0, 0.2);
+            box-shadow: 0 0 30px #f00;
+        }
+        .difficulty-master {
+            border-color: #a020f0;
+            color: #a020f0;
+        }
+        .difficulty-master:hover {
+            background: rgba(160, 32, 240, 0.2);
+            box-shadow: 0 0 30px #a020f0;
+        }
+        .difficulty-nightmare {
+            border-color: #8b00ff;
+            color: #8b00ff;
+        }
+        .difficulty-nightmare:hover {
+            background: rgba(139, 0, 255, 0.2);
+            box-shadow: 0 0 30px #8b00ff;
+        }
+        .difficulty-hell {
+            border-color: #ff0000;
+            color: #ff0000;
+            animation: hellPulse 2s infinite;
+        }
+        .difficulty-hell:hover {
+            background: rgba(255, 0, 0, 0.3);
+            box-shadow: 0 0 40px #ff0000;
+        }
+        @keyframes hellPulse {
+            0%, 100% { box-shadow: 0 0 10px #f00; }
+            50% { box-shadow: 0 0 30px #f00; }
+        }
+        .difficulty-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .difficulty-desc {
+            font-size: 11px;
+            opacity: 0.8;
+            line-height: 1.3;
+        }
+        .difficulty-level {
+            font-size: 14px;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #0ff;
+            background: linear-gradient(45deg, #0ff, #f0f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .btn {
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 20px;
+            background: linear-gradient(45deg, #0ff, #f0f);
+            border: none;
+            border-radius: 10px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        .btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.8);
+        }
+        .controls {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #aaa;
+        }
+        .wave-info {
+            font-size: 16px;
+            margin: 10px 0;
+            color: #0ff;
+        }
+        #combo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 60px;
+            font-weight: bold;
+            color: #ff0;
+            text-shadow: 0 0 20px #ff0;
+            opacity: 0;
+            pointer-events: none;
+            animation: comboAnim 1s ease-out;
+        }
+        @keyframes comboAnim {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            100% { opacity: 0; transform: translate(-50%, -80%) scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="700"></canvas>
+        <div id="ui">
+            <div class="stat">
+                <span class="stat-label">スコア:</span>
+                <span id="score">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">WAVE:</span>
+                <span id="wave">1</span>
+            </div>
+            <div class="stat">
+                <div id="healthBar">
+                    <div id="healthFill" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+        <div id="startScreen">
+            <h1>🚀 SPACE INVADERS 🚀</h1>
+            <div class="wave-info">究極のシューティング体験</div>
+            <div class="controls">
+                地球を侵略者から守り抜け！<br>
+                7段階の難易度で無限の挑戦
+            </div>
+            <button class="btn" onclick="showTutorial()">ゲームの説明を見る</button>
+            <button class="btn" onclick="showDifficulty()" style="margin-top: 15px; background: linear-gradient(45deg, #ff0, #f60);">すぐに始める（スキップ）</button>
+        </div>
+        <div id="tutorialScreen">
+            <h1 style="text-align: center; margin-bottom: 30px;">🎮 ゲームガイド</h1>
+            
+            <div class="tutorial-section">
+                <h2>📖 ストーリー</h2>
+                <p style="line-height: 1.8;">
+                    地球に謎の侵略者たちが迫ってきた！<br>
+                    あなたは最後の防衛線として、宇宙戦闘機を操縦し、波状攻撃を仕掛けてくる敵を撃退しなければならない。<br>
+                    果たして人類の命運は...！？
+                </p>
+            </div>
+
+            <div class="tutorial-section">
+                <h2>🎯 ゲームの目的</h2>
+                <p style="line-height: 1.8;">
+                    ✅ 画面上の全ての敵を倒してウェーブをクリア<br>
+                    ✅ できるだけ高いスコアを獲得<br>
+                    ✅ コンボを繋げてスコアを倍増<br>
+                    ✅ 体力が0になる前に生き延びる
+                </p>
+            </div>
+
+            <div class="tutorial-section">
+                <h2>🕹️ 操作方法</h2>
+                <div class="controls-grid">
+                    <div class="control-key">← →</div>
+                    <div class="control-desc">自機を左右に移動</div>
+                    
+                    <div class="control-key">SPACE</div>
+                    <div class="control-desc">弾を発射（長押しで連射）</div>
+                </div>
+            </div>
+
+            <div class="tutorial-section">
+                <h2>👾 敵の種類とギミック</h2>
+                
+                <div class="enemy-info">
+                    <div class="enemy-visual" style="color: #f0f;">◆</div>
+                    <div class="enemy-details">
+                        <div class="enemy-name">タイプ1（ピンク）</div>
+                        <div class="enemy-description">最上列に配置。動きが遅いが、倒すと10点獲得</div>
+                    </div>
+                </div>
+
+                <div class="enemy-info">
+                    <div class="enemy-visual" style="color: #ff0;">◆</div>
+                    <div class="enemy-details">
+                        <div class="enemy-name">タイプ2（黄色）</div>
+                        <div class="enemy-description">中列に配置。標準的な速度で、倒すと20点獲得</div>
+                    </div>
+                </div>
+
+                <div class="enemy-info">
+                    <div class="enemy-visual" style="color: #0ff;">◆</div>
+                    <div class="enemy-details">
+                        <div class="enemy-name">タイプ3（シアン）</div>
+                        <div class="enemy-description">最下列に配置。やや速く動き、倒すと30点獲得</div>
+                    </div>
+                </div>
+
+                <h3>⚠️ 敵の攻撃パターン</h3>
+                <p style="line-height: 1.8;">
+                    • 敵は一定間隔でランダムに弾を発射<br>
+                    • 難易度が上がると発射頻度と弾速が増加<br>
+                    • 敵が画面下部まで到達するとゲームオーバー<br>
+                    • 敵は左右に移動し、端に到達すると下に降りてくる
+                </p>
+            </div>
+
+            <div class="tutorial-section">
+                <h2>🎁 パワーアップアイテム</h2>
+                <div class="powerup-grid">
+                    <div class="powerup-item powerup-health">
+                        <div class="powerup-icon">💚</div>
+                        <div class="powerup-name" style="color: #0f0;">体力回復</div>
+                        <div class="powerup-effect">HP +30回復<br>最大100まで</div>
+                    </div>
+
+                    <div class="powerup-item powerup-shield">
+                        <div class="powerup-icon">🛡️</div>
+                        <div class="powerup-name" style="color: #0ff;">シールド</div>
+                        <div class="powerup-effect">5秒間無敵<br>敵弾を無効化</div>
+                    </div>
+
+                    <div class="powerup-item powerup-triple">
+                        <div class="powerup-icon">⚡</div>
+                        <div class="powerup-name" style="color: #ff0;">三方向弾</div>
+                        <div class="powerup-effect">8秒間3方向に発射<br>広範囲攻撃</div>
+                    </div>
+
+                    <div class="powerup-item powerup-laser">
+                        <div class="powerup-icon">🔫</div>
+                        <div class="powerup-name" style="color: #f0f;">レーザー</div>
+                        <div class="powerup-effect">8秒間貫通レーザー<br>複数の敵を同時撃破</div>
+                    </div>
+                </div>
+                <p style="margin-top: 15px; color: #aaa; font-size: 14px;">
+                    ※ パワーアップは敵を倒すとランダムで出現<br>
+                    ※ 難易度が高いほど出現率が低下
+                </p>
+            </div>
+
+            <div class="tutorial-section">
+                <h2>🔥 コンボシステム</h2>
+                <p style="line-height: 1.8;">
+                    • 連続して敵を倒すとコンボが発生<br>
+                    • コンボ数に応じてスコアが倍増（2倍、3倍、4倍...）<br>
+                    • 一定時間敵を倒さないとコンボがリセット<br>
+                    • 高得点を狙うなら、素早く連続撃破を狙おう！
+                </p>
+            </div>
+
+            <div class="tutorial-section">
+                <h2>📊 スコアシステム</h2>
+                <p style="line-height: 1.8;">
+                    <strong style="color: #ff0;">基本スコア：</strong><br>
+                    • タイプ1: 10点<br>
+                    • タイプ2: 20点<br>
+                    • タイプ3: 30点<br>
+                    <br>
+                    <strong style="color: #ff0;">ボーナス：</strong><br>
+                    • コンボ倍率が適用される<br>
+                    • ウェーブクリア: ウェーブ数 × 100点<br>
+                    <br>
+                    <strong style="color: #0ff;">例：</strong> タイプ3を3コンボで倒す<br>
+                    → 30点 × 3倍 = 90点！
+                </p>
+            </div>
+
+            <div class="tutorial-section">
+                <h2>💡 攻略のコツ</h2>
+                <ul class="tips-list">
+                    <li>最初は下の列の敵から倒すと安全</li>
+                    <li>画面の端を使って敵弾を避けやすくする</li>
+                    <li>パワーアップは積極的に取ろう（特にシールド）</li>
+                    <li>コンボを意識して連続撃破を狙う</li>
+                    <li>三方向弾やレーザーは温存せず積極的に使う</li>
+                    <li>敵が降りてくる前に倒し切ることが重要</li>
+                    <li>体力は常に50以上キープを心がける</li>
+                </ul>
+            </div>
+
+            <div class="tutorial-section">
+                <h2>🎚️ 難易度について</h2>
+                <p style="line-height: 1.8;">
+                    <strong style="color: #0f0;">Lv.1-2（初級・中級）：</strong> ゲームに慣れるのに最適<br>
+                    <strong style="color: #ff0;">Lv.3-4（上級・超級）：</strong> 本格的な挑戦<br>
+                    <strong style="color: #f0f;">Lv.5-7（達人・悪夢・地獄）：</strong> 極限の難易度<br>
+                    <br>
+                    難易度が上がると：<br>
+                    • 敵の移動速度が増加<br>
+                    • 敵の弾速と発射頻度が上昇<br>
+                    • 被ダメージが増加<br>
+                    • パワーアップ出現率が低下
+                </p>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn" onclick="showDifficulty()" style="font-size: 22px; padding: 20px 50px;">
+                    難易度を選んで開始！
+                </button>
+                <button class="btn" onclick="backToStartFromTutorial()" style="margin-top: 15px; font-size: 16px; background: rgba(255,255,255,0.1);">
+                    タイトルに戻る
+                </button>
+            </div>
+
+            <div class="scroll-hint">スクロールして全ての説明を読もう ↓</div>
+        </div>
+        <div id="difficultyScreen">
+            <h1>難易度を選択</h1>
+            <div class="difficulty-grid">
+                <button class="difficulty-btn difficulty-beginner" onclick="startGame('beginner')">
+                    <div class="difficulty-title">🌟 Lv.1 初級</div>
+                    <div class="difficulty-desc">敵: 超遅い<br>攻撃: 超弱い</div>
+                    <div class="difficulty-level">入門者向け</div>
+                </button>
+                <button class="difficulty-btn difficulty-intermediate" onclick="startGame('intermediate')">
+                    <div class="difficulty-title">⚡ Lv.2 中級</div>
+                    <div class="difficulty-desc">敵: 遅い<br>攻撃: 弱い</div>
+                    <div class="difficulty-level">初心者向け</div>
+                </button>
+                <button class="difficulty-btn difficulty-advanced" onclick="startGame('advanced')">
+                    <div class="difficulty-title">🔥 Lv.3 上級</div>
+                    <div class="difficulty-desc">敵: 普通<br>攻撃: 普通</div>
+                    <div class="difficulty-level">標準</div>
+                </button>
+                <button class="difficulty-btn difficulty-extreme" onclick="startGame('extreme')">
+                    <div class="difficulty-title">💀 Lv.4 超級</div>
+                    <div class="difficulty-desc">敵: 速い<br>攻撃: 強い</div>
+                    <div class="difficulty-level">熟練者向け</div>
+                </button>
+                <button class="difficulty-btn difficulty-master" onclick="startGame('master')">
+                    <div class="difficulty-title">👑 Lv.5 達人</div>
+                    <div class="difficulty-desc">敵: かなり速い<br>攻撃: かなり強い</div>
+                    <div class="difficulty-level">上級者向け</div>
+                </button>
+                <button class="difficulty-btn difficulty-nightmare" onclick="startGame('nightmare')">
+                    <div class="difficulty-title">😈 Lv.6 悪夢</div>
+                    <div class="difficulty-desc">敵: 超速い<br>攻撃: 超強い</div>
+                    <div class="difficulty-level">エキスパート</div>
+                </button>
+                <button class="difficulty-btn difficulty-hell" onclick="startGame('hell')">
+                    <div class="difficulty-title">🔥💀 Lv.7 地獄</div>
+                    <div class="difficulty-desc">敵: 極速<br>攻撃: 極強</div>
+                    <div class="difficulty-level">神の領域</div>
+                </button>
+            </div>
+            <button class="btn" onclick="backToStart()" style="margin-top: 30px; font-size: 16px;">戻る</button>
+        </div>
+        <div id="gameOver">
+            <h1>GAME OVER</h1>
+            <div class="wave-info">最終スコア: <span id="finalScore">0</span></div>
+            <div class="wave-info">到達WAVE: <span id="finalWave">1</span></div>
+            <div class="wave-info">難易度: <span id="finalDifficulty">中級</span></div>
+            <button class="btn" onclick="retryGame()">同じ難易度でリトライ</button>
+            <button class="btn" onclick="changeDifficulty()" style="margin-left: 10px;">難易度を変更</button>
+        </div>
+        <div id="combo"></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // ゲーム状態
+        let gameState = {
+            player: {
+                x: 375,
+                y: 630,
+                width: 50,
+                height: 40,
+                speed: 6,
+                health: 100,
+                maxHealth: 100,
+                weapon: 'normal',
+                shield: false
+            },
+            bullets: [],
+            invaders: [],
+            invaderBullets: [],
+            particles: [],
+            powerUps: [],
+            stars: [],
+            score: 0,
+            wave: 1,
+            gameOver: false,
+            gameStarted: false,
+            shootCooldown: 0,
+            invaderSpeed: 0.5,
+            invaderDirection: 1,
+            combo: 0,
+            comboTimer: 0,
+            time: 0,
+            difficulty: 'intermediate'
+        };
+
+        // 難易度設定（7段階）
+        const difficultySettings = {
+            beginner: {
+                name: '初級',
+                level: 1,
+                invaderBaseSpeed: 0.2,
+                invaderSpeedIncrease: 0.1,
+                invaderShootFrequency: 200,
+                bulletSpeed: 1.5,
+                bulletSpeedIncrease: 0.05,
+                powerUpChance: 0.3,
+                initialRows: 2,
+                maxRows: 4,
+                playerSpeed: 7,
+                enemyDamage: 5
+            },
+            intermediate: {
+                name: '中級',
+                level: 2,
+                invaderBaseSpeed: 0.35,
+                invaderSpeedIncrease: 0.15,
+                invaderShootFrequency: 150,
+                bulletSpeed: 2,
+                bulletSpeedIncrease: 0.1,
+                powerUpChance: 0.25,
+                initialRows: 3,
+                maxRows: 5,
+                playerSpeed: 6.5,
+                enemyDamage: 7
+            },
+            advanced: {
+                name: '上級',
+                level: 3,
+                invaderBaseSpeed: 0.5,
+                invaderSpeedIncrease: 0.2,
+                invaderShootFrequency: 120,
+                bulletSpeed: 2.5,
+                bulletSpeedIncrease: 0.15,
+                powerUpChance: 0.2,
+                initialRows: 4,
+                maxRows: 6,
+                playerSpeed: 6,
+                enemyDamage: 10
+            },
+            extreme: {
+                name: '超級',
+                level: 4,
+                invaderBaseSpeed: 0.7,
+                invaderSpeedIncrease: 0.3,
+                invaderShootFrequency: 90,
+                bulletSpeed: 3,
+                bulletSpeedIncrease: 0.2,
+                powerUpChance: 0.15,
+                initialRows: 4,
+                maxRows: 6,
+                playerSpeed: 6.5,
+                enemyDamage: 12
+            },
+            master: {
+                name: '達人',
+                level: 5,
+                invaderBaseSpeed: 0.9,
+                invaderSpeedIncrease: 0.4,
+                invaderShootFrequency: 70,
+                bulletSpeed: 3.5,
+                bulletSpeedIncrease: 0.25,
+                powerUpChance: 0.12,
+                initialRows: 5,
+                maxRows: 7,
+                playerSpeed: 7,
+                enemyDamage: 15
+            },
+            nightmare: {
+                name: '悪夢',
+                level: 6,
+                invaderBaseSpeed: 1.1,
+                invaderSpeedIncrease: 0.5,
+                invaderShootFrequency: 50,
+                bulletSpeed: 4,
+                bulletSpeedIncrease: 0.3,
+                powerUpChance: 0.1,
+                initialRows: 5,
+                maxRows: 7,
+                playerSpeed: 7.5,
+                enemyDamage: 18
+            },
+            hell: {
+                name: '地獄',
+                level: 7,
+                invaderBaseSpeed: 1.4,
+                invaderSpeedIncrease: 0.6,
+                invaderShootFrequency: 40,
+                bulletSpeed: 5,
+                bulletSpeedIncrease: 0.4,
+                powerUpChance: 0.08,
+                initialRows: 6,
+                maxRows: 8,
+                playerSpeed: 8,
+                enemyDamage: 20
+            }
+        };
+
+        const keys = {};
+
+        // 星の背景生成
+        for (let i = 0; i < 100; i++) {
+            gameState.stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 2,
+                speed: Math.random() * 0.5 + 0.2
+            });
+        }
+
+        // イベントリスナー
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            if (e.key === ' ') {
+                e.preventDefault();
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        function showDifficulty() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('tutorialScreen').style.display = 'none';
+            document.getElementById('difficultyScreen').style.display = 'block';
+        }
+
+        function showTutorial() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('tutorialScreen').style.display = 'block';
+            // スクロールを一番上に
+            document.getElementById('tutorialScreen').scrollTop = 0;
+        }
+
+        function backToStart() {
+            document.getElementById('difficultyScreen').style.display = 'none';
+            document.getElementById('tutorialScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+        }
+
+        function backToStartFromTutorial() {
+            document.getElementById('tutorialScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+        }
+
+        function startGame(difficulty = 'intermediate') {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('difficultyScreen').style.display = 'none';
+            document.getElementById('gameOver').style.display = 'none';
+            
+            const settings = difficultySettings[difficulty];
+            
+            gameState = {
+                player: {
+                    x: 375,
+                    y: 630,
+                    width: 50,
+                    height: 40,
+                    speed: settings.playerSpeed,
+                    health: 100,
+                    maxHealth: 100,
+                    weapon: 'normal',
+                    shield: false
+                },
+                bullets: [],
+                invaders: [],
+                invaderBullets: [],
+                particles: [],
+                powerUps: [],
+                stars: gameState.stars,
+                score: 0,
+                wave: 1,
+                gameOver: false,
+                gameStarted: true,
+                shootCooldown: 0,
+                invaderSpeed: settings.invaderBaseSpeed,
+                invaderDirection: 1,
+                combo: 0,
+                comboTimer: 0,
+                time: 0,
+                difficulty: difficulty
+            };
+
+            createInvaders();
+            updateUI();
+        }
+
+        function createInvaders() {
+            gameState.invaders = [];
+            const settings = difficultySettings[gameState.difficulty];
+            const rows = Math.min(settings.initialRows + Math.floor(gameState.wave / 3), settings.maxRows);
+            const cols = 8;
+            
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    gameState.invaders.push({
+                        x: col * 90 + 50,
+                        y: row * 60 + 50,
+                        width: 40,
+                        height: 35,
+                        alive: true,
+                        type: row % 3,
+                        animFrame: 0,
+                        shootTimer: Math.random() * settings.invaderShootFrequency
+                    });
+                }
+            }
+        }
+
+        function shoot() {
+            const player = gameState.player;
+            
+            if (player.weapon === 'triple') {
+                // 三方向弾
+                gameState.bullets.push(
+                    { x: player.x + player.width / 2 - 3, y: player.y, width: 6, height: 15, speed: 8, vx: -1, vy: -8, damage: 1 },
+                    { x: player.x + player.width / 2 - 3, y: player.y, width: 6, height: 15, speed: 8, vx: 0, vy: -8, damage: 1 },
+                    { x: player.x + player.width / 2 - 3, y: player.y, width: 6, height: 15, speed: 8, vx: 1, vy: -8, damage: 1 }
+                );
+                gameState.shootCooldown = 20;
+            } else if (player.weapon === 'laser') {
+                // レーザー
+                gameState.bullets.push({
+                    x: player.x + player.width / 2 - 4,
+                    y: player.y,
+                    width: 8,
+                    height: player.y,
+                    speed: 0,
+                    vx: 0,
+                    vy: 0,
+                    damage: 3,
+                    laser: true,
+                    life: 10
+                });
+                gameState.shootCooldown = 40;
+            } else {
+                // 通常弾
+                gameState.bullets.push({
+                    x: player.x + player.width / 2 - 3,
+                    y: player.y,
+                    width: 6,
+                    height: 15,
+                    speed: 8,
+                    vx: 0,
+                    vy: -8,
+                    damage: 1
+                });
+                gameState.shootCooldown = 15;
+            }
+
+            // 発射パーティクル
+            createParticles(player.x + player.width / 2, player.y, '#0ff', 5);
+        }
+
+        function invaderShoot(invader) {
+            const settings = difficultySettings[gameState.difficulty];
+            invader.shootTimer = settings.invaderShootFrequency + Math.random() * settings.invaderShootFrequency;
+            gameState.invaderBullets.push({
+                x: invader.x + invader.width / 2 - 3,
+                y: invader.y + invader.height,
+                width: 6,
+                height: 12,
+                speed: settings.bulletSpeed + gameState.wave * settings.bulletSpeedIncrease
+            });
+        }
+
+        function createParticles(x, y, color, count) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 3 + 1;
+                gameState.particles.push({
+                    x, y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    size: Math.random() * 3 + 2,
+                    color,
+                    life: 30,
+                    maxLife: 30
+                });
+            }
+        }
+
+        function createExplosion(x, y, size) {
+            createParticles(x, y, '#ff6600', size);
+            createParticles(x, y, '#ffff00', size);
+            createParticles(x, y, '#ff0000', size / 2);
+        }
+
+        function spawnPowerUp(x, y) {
+            const settings = difficultySettings[gameState.difficulty];
+            if (Math.random() < settings.powerUpChance) {
+                const types = ['health', 'shield', 'triple', 'laser'];
+                gameState.powerUps.push({
+                    x, y,
+                    width: 30,
+                    height: 30,
+                    type: types[Math.floor(Math.random() * types.length)],
+                    vy: 2
+                });
+            }
+        }
+
+        function checkCollision(rect1, rect2) {
+            return rect1.x < rect2.x + rect2.width &&
+                   rect1.x + rect1.width > rect2.x &&
+                   rect1.y < rect2.y + rect2.height &&
+                   rect1.y + rect1.height > rect2.y;
+        }
+
+        function showCombo() {
+            if (gameState.combo > 2) {
+                const comboEl = document.getElementById('combo');
+                comboEl.textContent = `${gameState.combo}x COMBO!`;
+                comboEl.style.animation = 'none';
+                setTimeout(() => {
+                    comboEl.style.animation = 'comboAnim 1s ease-out';
+                }, 10);
+            }
+        }
+
+        function update() {
+            if (!gameState.gameStarted || gameState.gameOver) return;
+
+            gameState.time++;
+
+            // プレイヤー移動
+            const player = gameState.player;
+            if (keys['ArrowLeft'] && player.x > 0) {
+                player.x -= player.speed;
+            }
+            if (keys['ArrowRight'] && player.x < canvas.width - player.width) {
+                player.x += player.speed;
+            }
+
+            // クールダウン
+            if (gameState.shootCooldown > 0) {
+                gameState.shootCooldown--;
+            }
+
+            // スペースキー長押しで連射
+            if (keys[' '] && gameState.shootCooldown === 0) {
+                shoot();
+            }
+
+            // コンボタイマー
+            if (gameState.comboTimer > 0) {
+                gameState.comboTimer--;
+            } else {
+                gameState.combo = 0;
+            }
+
+            // 星の移動
+            gameState.stars.forEach(star => {
+                star.y += star.speed;
+                if (star.y > canvas.height) {
+                    star.y = 0;
+                    star.x = Math.random() * canvas.width;
+                }
+            });
+
+            // 弾の更新
+            gameState.bullets = gameState.bullets.filter(bullet => {
+                if (bullet.laser) {
+                    bullet.life--;
+                    return bullet.life > 0;
+                }
+                bullet.x += bullet.vx || 0;
+                bullet.y += bullet.vy || -bullet.speed;
+                return bullet.y > -bullet.height;
+            });
+
+            // インベーダーの弾
+            gameState.invaderBullets = gameState.invaderBullets.filter(bullet => {
+                bullet.y += bullet.speed;
+                
+                if (checkCollision(bullet, player)) {
+                    if (!player.shield) {
+                        const settings = difficultySettings[gameState.difficulty];
+                        player.health -= settings.enemyDamage;
+                        updateUI();
+                        createExplosion(bullet.x, bullet.y, 10);
+                        
+                        if (player.health <= 0) {
+                            endGame();
+                        }
+                    } else {
+                        createParticles(bullet.x, bullet.y, '#0ff', 5);
+                    }
+                    return false;
+                }
+                
+                return bullet.y < canvas.height;
+            });
+
+            // パワーアップ
+            gameState.powerUps = gameState.powerUps.filter(powerUp => {
+                powerUp.y += powerUp.vy;
+                
+                if (checkCollision(powerUp, player)) {
+                    switch(powerUp.type) {
+                        case 'health':
+                            player.health = Math.min(player.maxHealth, player.health + 30);
+                            break;
+                        case 'shield':
+                            player.shield = true;
+                            setTimeout(() => player.shield = false, 5000);
+                            break;
+                        case 'triple':
+                        case 'laser':
+                            player.weapon = powerUp.type;
+                            setTimeout(() => player.weapon = 'normal', 8000);
+                            break;
+                    }
+                    createParticles(powerUp.x, powerUp.y, '#0f0', 15);
+                    updateUI();
+                    return false;
+                }
+                
+                return powerUp.y < canvas.height;
+            });
+
+            // インベーダー移動
+            let shouldMoveDown = false;
+            gameState.invaders.forEach(invader => {
+                if (!invader.alive) return;
+                
+                invader.animFrame = (invader.animFrame + 0.1) % 2;
+                invader.x += gameState.invaderSpeed * gameState.invaderDirection;
+                
+                if (invader.x <= 0 || invader.x >= canvas.width - invader.width) {
+                    shouldMoveDown = true;
+                }
+
+                // 発射
+                invader.shootTimer--;
+                if (invader.shootTimer <= 0) {
+                    invaderShoot(invader);
+                }
+            });
+
+            if (shouldMoveDown) {
+                gameState.invaderDirection *= -1;
+                gameState.invaders.forEach(invader => {
+                    invader.y += 30;
+                    if (invader.alive && invader.y + invader.height >= player.y) {
+                        endGame();
+                    }
+                });
+            }
+
+            // 弾とインベーダーの衝突
+            gameState.bullets.forEach((bullet, bIndex) => {
+                gameState.invaders.forEach(invader => {
+                    if (invader.alive && checkCollision(bullet, invader)) {
+                        invader.alive = false;
+                        
+                        const points = (invader.type + 1) * 10 * (gameState.combo + 1);
+                        gameState.score += points;
+                        gameState.combo++;
+                        gameState.comboTimer = 60;
+                        showCombo();
+                        
+                        if (!bullet.laser) {
+                            gameState.bullets.splice(bIndex, 1);
+                        }
+                        
+                        createExplosion(invader.x + invader.width / 2, invader.y + invader.height / 2, 20);
+                        spawnPowerUp(invader.x + invader.width / 2, invader.y + invader.height / 2);
+                        updateUI();
+                    }
+                });
+            });
+
+            // パーティクル更新
+            gameState.particles = gameState.particles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life--;
+                return p.life > 0;
+            });
+
+            // 全滅チェック
+            if (gameState.invaders.every(inv => !inv.alive)) {
+                gameState.wave++;
+                const settings = difficultySettings[gameState.difficulty];
+                gameState.invaderSpeed += settings.invaderSpeedIncrease;
+                createInvaders();
+                gameState.score += gameState.wave * 100;
+                updateUI();
+            }
+        }
+
+        function draw() {
+            // 背景
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 星
+            ctx.fillStyle = '#fff';
+            gameState.stars.forEach(star => {
+                ctx.globalAlpha = Math.random() * 0.5 + 0.5;
+                ctx.fillRect(star.x, star.y, star.size, star.size);
+            });
+            ctx.globalAlpha = 1;
+
+            if (!gameState.gameStarted) return;
+
+            // プレイヤー描画
+            const player = gameState.player;
+            
+            if (player.shield) {
+                ctx.strokeStyle = '#0ff';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(player.x + player.width / 2, player.y + player.height / 2, 35, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // プレイヤー本体
+            ctx.fillStyle = '#0f0';
+            ctx.beginPath();
+            ctx.moveTo(player.x + player.width / 2, player.y);
+            ctx.lineTo(player.x, player.y + player.height);
+            ctx.lineTo(player.x + player.width, player.y + player.height);
+            ctx.closePath();
+            ctx.fill();
+
+            // エンジン
+            ctx.fillStyle = '#f60';
+            ctx.fillRect(player.x + 10, player.y + player.height - 5, 10, 8);
+            ctx.fillRect(player.x + player.width - 20, player.y + player.height - 5, 10, 8);
+
+            // 弾描画
+            gameState.bullets.forEach(bullet => {
+                if (bullet.laser) {
+                    const gradient = ctx.createLinearGradient(bullet.x, bullet.y, bullet.x, 0);
+                    gradient.addColorStop(0, 'rgba(0, 255, 255, 0)');
+                    gradient.addColorStop(0.5, 'rgba(0, 255, 255, 0.8)');
+                    gradient.addColorStop(1, 'rgba(0, 255, 255, 1)');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(bullet.x, 0, bullet.width, bullet.y);
+                } else {
+                    ctx.fillStyle = '#0ff';
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = '#0ff';
+                    ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+                    ctx.shadowBlur = 0;
+                }
+            });
+
+            // インベーダーの弾
+            gameState.invaderBullets.forEach(bullet => {
+                ctx.fillStyle = '#f0f';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#f0f';
+                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+                ctx.shadowBlur = 0;
+            });
+
+            // パワーアップ
+            gameState.powerUps.forEach(powerUp => {
+                ctx.save();
+                ctx.translate(powerUp.x + powerUp.width / 2, powerUp.y + powerUp.height / 2);
+                ctx.rotate(gameState.time * 0.05);
+                
+                const colors = {
+                    health: '#0f0',
+                    shield: '#0ff',
+                    triple: '#ff0',
+                    laser: '#f0f'
+                };
+                
+                ctx.fillStyle = colors[powerUp.type];
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = colors[powerUp.type];
+                ctx.fillRect(-powerUp.width / 2, -powerUp.height / 2, powerUp.width, powerUp.height);
+                ctx.shadowBlur = 0;
+                ctx.restore();
+            });
+
+            // インベーダー描画
+            gameState.invaders.forEach(invader => {
+                if (!invader.alive) return;
+
+                const colors = ['#f0f', '#ff0', '#0ff'];
+                ctx.fillStyle = colors[invader.type];
+                
+                const offset = Math.floor(invader.animFrame) * 5;
+                
+                // 本体
+                ctx.fillRect(invader.x + offset, invader.y + 10, invader.width - offset * 2, invader.height - 10);
+                
+                // 触角
+                ctx.fillRect(invader.x, invader.y, 8, 10);
+                ctx.fillRect(invader.x + invader.width - 8, invader.y, 8, 10);
+                
+                // 目
+                ctx.fillStyle = '#000';
+                ctx.fillRect(invader.x + 10, invader.y + 15, 6, 6);
+                ctx.fillRect(invader.x + invader.width - 16, invader.y + 15, 6, 6);
+            });
+
+            // パーティクル
+            gameState.particles.forEach(p => {
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life / p.maxLife;
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+            });
+            ctx.globalAlpha = 1;
+        }
+
+        function updateUI() {
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('wave').textContent = gameState.wave;
+            const healthPercent = (gameState.player.health / gameState.player.maxHealth) * 100;
+            document.getElementById('healthFill').style.width = healthPercent + '%';
+        }
+
+        function endGame() {
+            gameState.gameOver = true;
+            document.getElementById('finalScore').textContent = gameState.score;
+            document.getElementById('finalWave').textContent = gameState.wave;
+            
+            const difficultyNames = {
+                beginner: 'Lv.1 初級',
+                intermediate: 'Lv.2 中級',
+                advanced: 'Lv.3 上級',
+                extreme: 'Lv.4 超級',
+                master: 'Lv.5 達人',
+                nightmare: 'Lv.6 悪夢',
+                hell: 'Lv.7 地獄'
+            };
+            document.getElementById('finalDifficulty').textContent = difficultyNames[gameState.difficulty];
+            document.getElementById('gameOver').style.display = 'block';
+        }
+
+        function retryGame() {
+            startGame(gameState.difficulty);
+        }
+
+        function changeDifficulty() {
+            document.getElementById('gameOver').style.display = 'none';
+            document.getElementById('difficultyScreen').style.display = 'block';
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
