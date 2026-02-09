@@ -435,7 +435,7 @@
             <div class="tutorial-section">
                 <h2>🕹️ 操作方法</h2>
                 <div class="controls-grid">
-                    <div class="control-key">← →</div>
+                    <div class="control-key">← → / A D</div>
                     <div class="control-desc">自機を左右に移動</div>
                     
                     <div class="control-key">SPACE</div>
@@ -996,12 +996,12 @@
 
             gameState.time++;
 
-            // プレイヤー移動
+            // プレイヤー移動（矢印キーまたはWASD）
             const player = gameState.player;
-            if (keys['ArrowLeft'] && player.x > 0) {
+            if ((keys['ArrowLeft'] || keys['a'] || keys['A']) && player.x > 0) {
                 player.x -= player.speed;
             }
-            if (keys['ArrowRight'] && player.x < canvas.width - player.width) {
+            if ((keys['ArrowRight'] || keys['d'] || keys['D']) && player.x < canvas.width - player.width) {
                 player.x += player.speed;
             }
 
