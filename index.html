@@ -1,17 +1,37 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>スペースインベーダー ULTIMATE</title>
+    
+    <!-- SEO基本情報 -->
+    <title>スペースインベーダー ULTIMATE - 無料ブラウザゲーム | 7段階難易度</title>
+    <meta name="description" content="ブラウザで遊べる本格スペースインベーダーゲーム！7段階の難易度、パワーアップ、コンボシステム搭載。初心者から上級者まで楽しめる無料シューティングゲーム。">
+    <meta name="keywords" content="スペースインベーダー,無料ゲーム,ブラウザゲーム,シューティングゲーム,レトロゲーム,HTML5ゲーム,インベーダー,アクションゲーム">
+    <meta name="author" content="tomoya06257-beep">
+    
+    <!-- Open Graph (SNS共有用) -->
+    <meta property="og:title" content="スペースインベーダー ULTIMATE - 無料ブラウザゲーム">
+    <meta property="og:description" content="7段階の難易度で楽しめる本格スペースインベーダー！パワーアップやコンボシステム搭載の無料ゲーム。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://superb-maamoul-1cd317.netlify.app">
+    <meta property="og:site_name" content="スペースインベーダー ULTIMATE">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="スペースインベーダー ULTIMATE">
+    <meta name="twitter:description" content="ブラウザで遊べる本格スペースインベーダー！7段階難易度で無限に楽しめる。">
+    
+    <!-- 検索エンジン設定 -->
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://superb-maamoul-1cd317.netlify.app">
+    
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             display: flex;
             flex-direction: column;
@@ -23,32 +43,28 @@
             color: #fff;
             overflow: hidden;
         }
-
         #gameContainer {
             position: relative;
             box-shadow: 0 0 50px rgba(0, 255, 255, 0.5);
         }
-
         canvas {
             display: block;
             background: #000;
             border: 3px solid #0ff;
             box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
         }
-
         #ui {
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             padding: 15px 20px;
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent);
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
             display: flex;
             justify-content: space-between;
             align-items: center;
             pointer-events: none;
         }
-
         .stat {
             font-size: 20px;
             text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
@@ -56,12 +72,10 @@
             align-items: center;
             gap: 10px;
         }
-
         .stat-label {
             color: #0ff;
             font-weight: bold;
         }
-
         #healthBar {
             width: 150px;
             height: 20px;
@@ -71,18 +85,13 @@
             overflow: hidden;
             position: relative;
         }
-
         #healthFill {
             height: 100%;
             background: linear-gradient(to right, #ff0000, #ff6600);
             transition: width 0.3s;
             box-shadow: 0 0 10px #f00;
         }
-
-        #gameOver,
-        #startScreen,
-        #difficultyScreen,
-        #tutorialScreen {
+        #gameOver, #startScreen, #difficultyScreen, #tutorialScreen {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -95,20 +104,15 @@
             box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
             pointer-events: all;
         }
-
-        #gameOver,
-        #difficultyScreen,
-        #tutorialScreen {
+        #gameOver, #difficultyScreen, #tutorialScreen {
             display: none;
         }
-
         #tutorialScreen {
             max-width: 800px;
             max-height: 90vh;
             overflow-y: auto;
             text-align: left;
         }
-
         .tutorial-section {
             margin: 25px 0;
             padding: 20px;
@@ -116,28 +120,24 @@
             border-left: 4px solid #0ff;
             border-radius: 10px;
         }
-
         .tutorial-section h2 {
             color: #0ff;
             margin-bottom: 15px;
             font-size: 24px;
             text-align: center;
         }
-
         .tutorial-section h3 {
             color: #ff0;
             margin-top: 15px;
             margin-bottom: 10px;
             font-size: 18px;
         }
-
         .controls-grid {
             display: grid;
             grid-template-columns: auto 1fr;
             gap: 10px;
             margin: 10px 0;
         }
-
         .control-key {
             background: rgba(255, 255, 255, 0.1);
             padding: 8px 15px;
@@ -147,12 +147,10 @@
             border: 2px solid #0ff;
             text-align: center;
         }
-
         .control-desc {
             padding: 8px;
             color: #fff;
         }
-
         .enemy-info {
             display: flex;
             align-items: center;
@@ -162,7 +160,6 @@
             background: rgba(0, 0, 0, 0.3);
             border-radius: 8px;
         }
-
         .enemy-visual {
             width: 60px;
             height: 50px;
@@ -171,86 +168,62 @@
             justify-content: center;
             font-size: 40px;
         }
-
         .enemy-details {
             flex: 1;
         }
-
         .enemy-name {
             font-weight: bold;
             color: #ff0;
             font-size: 16px;
         }
-
         .enemy-description {
             color: #aaa;
             font-size: 14px;
             margin-top: 5px;
         }
-
         .powerup-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 15px;
             margin: 15px 0;
         }
-
         .powerup-item {
             background: rgba(0, 0, 0, 0.3);
             padding: 15px;
             border-radius: 10px;
             border: 2px solid;
         }
-
-        .powerup-health {
-            border-color: #0f0;
-        }
-
-        .powerup-shield {
-            border-color: #0ff;
-        }
-
-        .powerup-triple {
-            border-color: #ff0;
-        }
-
-        .powerup-laser {
-            border-color: #f0f;
-        }
-
+        .powerup-health { border-color: #0f0; }
+        .powerup-shield { border-color: #0ff; }
+        .powerup-triple { border-color: #ff0; }
+        .powerup-laser { border-color: #f0f; }
         .powerup-icon {
             font-size: 32px;
             margin-bottom: 10px;
         }
-
         .powerup-name {
             font-weight: bold;
             margin-bottom: 5px;
             font-size: 16px;
         }
-
         .powerup-effect {
             font-size: 13px;
             color: #aaa;
         }
-
         .tips-list {
             list-style: none;
             padding: 0;
         }
-
         .tips-list li {
             padding: 8px 0;
             padding-left: 25px;
             position: relative;
         }
-
         .tips-list li:before {
             content: "💡";
             position: absolute;
             left: 0;
         }
-
         .scroll-hint {
             text-align: center;
             color: #0ff;
@@ -258,19 +231,117 @@
             margin-top: 20px;
             animation: pulse 2s infinite;
         }
-
         @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 0.5;
-            }
-
-            50% {
-                opacity: 1;
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        /* モバイル対応：タッチ操作ボタン */
+        #mobileControls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: none;
+            justify-content: space-between;
+            padding: 0 20px;
+            pointer-events: none;
+        }
+        #mobileControls.show {
+            display: flex;
+        }
+        .mobile-buttons {
+            display: flex;
+            gap: 10px;
+            pointer-events: all;
+        }
+        .mobile-btn {
+            width: 70px;
+            height: 70px;
+            background: rgba(0, 255, 255, 0.3);
+            border: 3px solid #0ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #0ff;
+            font-weight: bold;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            transition: all 0.1s;
+        }
+        .mobile-btn:active {
+            background: rgba(0, 255, 255, 0.6);
+            transform: scale(0.95);
+        }
+        .mobile-shoot-btn {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 0, 255, 0.3);
+            border-color: #f0f;
+            font-size: 16px;
+        }
+        .mobile-shoot-btn:active {
+            background: rgba(255, 0, 255, 0.6);
+        }
+        /* 操作説明（常時表示・右上） */
+        #permanentControls {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-size: 12px;
+            color: #fff;
+            pointer-events: none;
+            max-width: 200px;
+        }
+        #permanentControls h4 {
+            color: #0ff;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        #permanentControls ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #permanentControls li {
+            margin: 3px 0;
+            line-height: 1.4;
+        }
+        /* モバイル検出時の調整 */
+        @media (max-width: 768px) {
+            #permanentControls {
+                display: none; /* モバイルでは非表示 */
             }
         }
-
+        /* ゲーム開始前のオーバーレイ */
+        #startOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            pointer-events: all;
+        }
+        #startOverlay.show {
+            display: flex;
+        }
+        #startOverlay .message {
+            font-size: 32px;
+            color: #0ff;
+            text-shadow: 0 0 20px #0ff;
+            animation: pulse 2s infinite;
+        }
         .difficulty-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -278,7 +349,6 @@
             margin-top: 30px;
             max-width: 700px;
         }
-
         .difficulty-btn {
             padding: 25px 15px;
             font-size: 18px;
@@ -292,7 +362,6 @@
             position: relative;
             overflow: hidden;
         }
-
         .difficulty-btn::before {
             content: '';
             position: absolute;
@@ -300,120 +369,92 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
             transition: left 0.5s;
         }
-
         .difficulty-btn:hover::before {
             left: 100%;
         }
-
         .difficulty-btn:hover {
             transform: scale(1.05);
             box-shadow: 0 0 30px;
         }
-
         .difficulty-beginner {
             border-color: #0f0;
             color: #0f0;
         }
-
         .difficulty-beginner:hover {
             background: rgba(0, 255, 0, 0.2);
             box-shadow: 0 0 30px #0f0;
         }
-
         .difficulty-intermediate {
             border-color: #ff0;
             color: #ff0;
         }
-
         .difficulty-intermediate:hover {
             background: rgba(255, 255, 0, 0.2);
             box-shadow: 0 0 30px #ff0;
         }
-
         .difficulty-advanced {
             border-color: #f60;
             color: #f60;
         }
-
         .difficulty-advanced:hover {
             background: rgba(255, 102, 0, 0.2);
             box-shadow: 0 0 30px #f60;
         }
-
         .difficulty-extreme {
             border-color: #f00;
             color: #f00;
         }
-
         .difficulty-extreme:hover {
             background: rgba(255, 0, 0, 0.2);
             box-shadow: 0 0 30px #f00;
         }
-
         .difficulty-master {
             border-color: #a020f0;
             color: #a020f0;
         }
-
         .difficulty-master:hover {
             background: rgba(160, 32, 240, 0.2);
             box-shadow: 0 0 30px #a020f0;
         }
-
         .difficulty-nightmare {
             border-color: #8b00ff;
             color: #8b00ff;
         }
-
         .difficulty-nightmare:hover {
             background: rgba(139, 0, 255, 0.2);
             box-shadow: 0 0 30px #8b00ff;
         }
-
         .difficulty-hell {
             border-color: #ff0000;
             color: #ff0000;
             animation: hellPulse 2s infinite;
         }
-
         .difficulty-hell:hover {
             background: rgba(255, 0, 0, 0.3);
             box-shadow: 0 0 40px #ff0000;
         }
-
         @keyframes hellPulse {
-
-            0%,
-            100% {
-                box-shadow: 0 0 10px #f00;
-            }
-
-            50% {
-                box-shadow: 0 0 30px #f00;
-            }
+            0%, 100% { box-shadow: 0 0 10px #f00; }
+            50% { box-shadow: 0 0 30px #f00; }
         }
-
         .difficulty-title {
             font-size: 22px;
             font-weight: bold;
             margin-bottom: 5px;
         }
-
         .difficulty-desc {
             font-size: 11px;
             opacity: 0.8;
             line-height: 1.3;
         }
-
         .difficulty-level {
             font-size: 14px;
             margin-top: 5px;
             opacity: 0.9;
         }
-
         h1 {
             font-size: 48px;
             margin-bottom: 20px;
@@ -423,7 +464,6 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-
         .btn {
             margin-top: 20px;
             padding: 15px 40px;
@@ -437,24 +477,20 @@
             transition: transform 0.2s;
             box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
         }
-
         .btn:hover {
             transform: scale(1.1);
             box-shadow: 0 0 30px rgba(0, 255, 255, 0.8);
         }
-
         .controls {
             margin-top: 15px;
             font-size: 14px;
             color: #aaa;
         }
-
         .wave-info {
             font-size: 16px;
             margin: 10px 0;
             color: #0ff;
         }
-
         #combo {
             position: absolute;
             top: 50%;
@@ -468,24 +504,11 @@
             pointer-events: none;
             animation: comboAnim 1s ease-out;
         }
-
         @keyframes comboAnim {
-            0% {
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(0.5);
-            }
-
-            50% {
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(1.2);
-            }
-
-            100% {
-                opacity: 0;
-                transform: translate(-50%, -80%) scale(1);
-            }
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            100% { opacity: 0; transform: translate(-50%, -80%) scale(1); }
         }
-
         #controlHints {
             position: absolute;
             bottom: 80px;
@@ -501,22 +524,18 @@
             transition: opacity 0.5s;
             pointer-events: none;
         }
-
         #controlHints.show {
             opacity: 1;
         }
-
         .hint-item {
             display: flex;
             align-items: center;
             gap: 10px;
         }
-
         .hint-keys {
             display: flex;
             gap: 5px;
         }
-
         .hint-key {
             background: rgba(255, 255, 255, 0.1);
             border: 2px solid #0ff;
@@ -527,12 +546,10 @@
             min-width: 35px;
             text-align: center;
         }
-
         .hint-desc {
             color: #fff;
             font-size: 14px;
         }
-
         #powerupNotification {
             position: absolute;
             top: 100px;
@@ -548,11 +565,9 @@
             pointer-events: none;
             transition: opacity 0.3s;
         }
-
         #powerupNotification.show {
             opacity: 1;
         }
-
         #powerupTimer {
             position: absolute;
             top: 140px;
@@ -564,13 +579,11 @@
             opacity: 0;
             pointer-events: none;
         }
-
         #powerupTimer.show {
             opacity: 1;
         }
     </style>
 </head>
-
 <body>
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="700"></canvas>
@@ -597,12 +610,11 @@
                 7段階の難易度で無限の挑戦
             </div>
             <button class="btn" onclick="showTutorial()">ゲームの説明を見る</button>
-            <button class="btn" onclick="showDifficulty()"
-                style="margin-top: 15px; background: linear-gradient(45deg, #ff0, #f60);">すぐに始める（スキップ）</button>
+            <button class="btn" onclick="showDifficulty()" style="margin-top: 15px; background: linear-gradient(45deg, #ff0, #f60);">すぐに始める（スキップ）</button>
         </div>
         <div id="tutorialScreen">
             <h1 style="text-align: center; margin-bottom: 30px;">🎮 ゲームガイド</h1>
-
+            
             <div class="tutorial-section">
                 <h2>📖 ストーリー</h2>
                 <p style="line-height: 1.8;">
@@ -627,7 +639,7 @@
                 <div class="controls-grid">
                     <div class="control-key">← → / A D</div>
                     <div class="control-desc">自機を左右に移動</div>
-
+                    
                     <div class="control-key">SPACE</div>
                     <div class="control-desc">弾を発射（長押しで連射）</div>
                 </div>
@@ -635,7 +647,7 @@
 
             <div class="tutorial-section">
                 <h2>👾 敵の種類とギミック</h2>
-
+                
                 <div class="enemy-info">
                     <div class="enemy-visual" style="color: #f0f;">◆</div>
                     <div class="enemy-details">
@@ -761,8 +773,7 @@
                 <button class="btn" onclick="showDifficulty()" style="font-size: 22px; padding: 20px 50px;">
                     難易度を選んで開始！
                 </button>
-                <button class="btn" onclick="backToStartFromTutorial()"
-                    style="margin-top: 15px; font-size: 16px; background: rgba(255,255,255,0.1);">
+                <button class="btn" onclick="backToStartFromTutorial()" style="margin-top: 15px; font-size: 16px; background: rgba(255,255,255,0.1);">
                     タイトルに戻る
                 </button>
             </div>
@@ -817,12 +828,9 @@
             <div class="wave-info">到達WAVE: <span id="finalWave">1</span></div>
             <div class="wave-info">難易度: <span id="finalDifficulty">中級</span></div>
             <div style="margin-top: 20px; padding: 20px; background: rgba(0,255,255,0.1); border-radius: 10px;">
-                <div class="wave-info" style="font-size: 18px; margin: 8px 0;">💀 倒した敵: <span id="finalKills">0</span>体
-                </div>
-                <div class="wave-info" style="font-size: 18px; margin: 8px 0;">🔥 最大コンボ: <span
-                        id="finalMaxCombo">0</span>連鎖</div>
-                <div class="wave-info" style="font-size: 18px; margin: 8px 0;">✅ クリアWAVE: <span
-                        id="finalWavesCleared">0</span>回</div>
+                <div class="wave-info" style="font-size: 18px; margin: 8px 0;">💀 倒した敵: <span id="finalKills">0</span>体</div>
+                <div class="wave-info" style="font-size: 18px; margin: 8px 0;">🔥 最大コンボ: <span id="finalMaxCombo">0</span>連鎖</div>
+                <div class="wave-info" style="font-size: 18px; margin: 8px 0;">✅ クリアWAVE: <span id="finalWavesCleared">0</span>回</div>
             </div>
             <button class="btn" onclick="retryGame()">同じ難易度でリトライ</button>
             <button class="btn" onclick="changeDifficulty()" style="margin-left: 10px;">難易度を変更</button>
@@ -850,6 +858,31 @@
         </div>
         <div id="powerupNotification"></div>
         <div id="powerupTimer"></div>
+        
+        <!-- 常時表示の操作説明（右上） -->
+        <div id="permanentControls">
+            <h4>🎮 操作方法</h4>
+            <ul>
+                <li>← → / A D: 移動</li>
+                <li>SPACE: 連射</li>
+            </ul>
+        </div>
+        
+        <!-- モバイル用タッチボタン -->
+        <div id="mobileControls">
+            <div class="mobile-buttons">
+                <div class="mobile-btn" id="btnLeft">←</div>
+                <div class="mobile-btn" id="btnRight">→</div>
+            </div>
+            <div class="mobile-buttons">
+                <div class="mobile-btn mobile-shoot-btn" id="btnShoot">発射</div>
+            </div>
+        </div>
+        
+        <!-- ゲーム開始前のオーバーレイ -->
+        <div id="startOverlay">
+            <div class="message">準備完了！</div>
+        </div>
     </div>
 
     <script>
@@ -1013,6 +1046,17 @@
         };
 
         const keys = {};
+        
+        // モバイル検出
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                         window.innerWidth <= 768;
+        
+        // タッチコントロール状態
+        let touchControls = {
+            left: false,
+            right: false,
+            shoot: false
+        };
 
         // 星の背景生成
         for (let i = 0; i < 100; i++) {
@@ -1035,6 +1079,44 @@
         document.addEventListener('keyup', (e) => {
             keys[e.key] = false;
         });
+
+        // モバイルコントロールの初期化
+        if (isMobile) {
+            document.getElementById('mobileControls').classList.add('show');
+            
+            // 左ボタン
+            const btnLeft = document.getElementById('btnLeft');
+            btnLeft.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                touchControls.left = true;
+            });
+            btnLeft.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                touchControls.left = false;
+            });
+            
+            // 右ボタン
+            const btnRight = document.getElementById('btnRight');
+            btnRight.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                touchControls.right = true;
+            });
+            btnRight.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                touchControls.right = false;
+            });
+            
+            // 発射ボタン
+            const btnShoot = document.getElementById('btnShoot');
+            btnShoot.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                touchControls.shoot = true;
+            });
+            btnShoot.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                touchControls.shoot = false;
+            });
+        }
 
         function showDifficulty() {
             document.getElementById('startScreen').style.display = 'none';
@@ -1064,9 +1146,9 @@
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('difficultyScreen').style.display = 'none';
             document.getElementById('gameOver').style.display = 'none';
-
+            
             const settings = difficultySettings[difficulty];
-
+            
             gameState = {
                 player: {
                     x: 375,
@@ -1108,18 +1190,27 @@
 
             createInvaders();
             updateUI();
-
-            // 操作ヒントを表示（5秒間）
+            
+            // ゲーム開始シーケンス
+            // 1. 操作ヒントを5秒間表示
             document.getElementById('controlHints').classList.add('show');
+            document.getElementById('startOverlay').classList.add('show');
+            
             setTimeout(() => {
+                // 2. 操作ヒントを非表示
                 document.getElementById('controlHints').classList.remove('show');
                 gameState.controlHintsShown = true;
+                
+                // 3. 1秒待ってからゲーム開始
+                setTimeout(() => {
+                    document.getElementById('startOverlay').classList.remove('show');
+                    
+                    // 4. 敵の初期攻撃遅延を開始
+                    setTimeout(() => {
+                        gameState.invaderCanShoot = true;
+                    }, settings.invaderInitialDelay);
+                }, 1000);
             }, 5000);
-
-            // 敵の初期攻撃遅延
-            setTimeout(() => {
-                gameState.invaderCanShoot = true;
-            }, settings.invaderInitialDelay);
         }
 
         function createInvaders() {
@@ -1127,7 +1218,7 @@
             const settings = difficultySettings[gameState.difficulty];
             const rows = Math.min(settings.initialRows + Math.floor(gameState.wave / 3), settings.maxRows);
             const cols = 8;
-
+            
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
                     gameState.invaders.push({
@@ -1146,7 +1237,7 @@
 
         function shoot() {
             const player = gameState.player;
-
+            
             if (player.weapon === 'triple') {
                 // 三方向弾
                 gameState.bullets.push(
@@ -1239,9 +1330,9 @@
 
         function checkCollision(rect1, rect2) {
             return rect1.x < rect2.x + rect2.width &&
-                rect1.x + rect1.width > rect2.x &&
-                rect1.y < rect2.y + rect2.height &&
-                rect1.y + rect1.height > rect2.y;
+                   rect1.x + rect1.width > rect2.x &&
+                   rect1.y < rect2.y + rect2.height &&
+                   rect1.y + rect1.height > rect2.y;
         }
 
         function showCombo() {
@@ -1260,12 +1351,12 @@
 
             gameState.time++;
 
-            // プレイヤー移動（矢印キーまたはWASD）
+            // プレイヤー移動（矢印キーまたはWASD またはタッチ）
             const player = gameState.player;
-            if ((keys['ArrowLeft'] || keys['a'] || keys['A']) && player.x > 0) {
+            if ((keys['ArrowLeft'] || keys['a'] || keys['A'] || touchControls.left) && player.x > 0) {
                 player.x -= player.speed;
             }
-            if ((keys['ArrowRight'] || keys['d'] || keys['D']) && player.x < canvas.width - player.width) {
+            if ((keys['ArrowRight'] || keys['d'] || keys['D'] || touchControls.right) && player.x < canvas.width - player.width) {
                 player.x += player.speed;
             }
 
@@ -1274,8 +1365,8 @@
                 gameState.shootCooldown--;
             }
 
-            // スペースキー長押しで連射
-            if (keys[' '] && gameState.shootCooldown === 0) {
+            // スペースキー長押しまたはタッチで連射
+            if ((keys[' '] || touchControls.shoot) && gameState.shootCooldown === 0) {
                 shoot();
             }
 
@@ -1309,14 +1400,14 @@
             // インベーダーの弾
             gameState.invaderBullets = gameState.invaderBullets.filter(bullet => {
                 bullet.y += bullet.speed;
-
+                
                 if (checkCollision(bullet, player)) {
                     if (!player.shield) {
                         const settings = difficultySettings[gameState.difficulty];
                         player.health -= settings.enemyDamage;
                         updateUI();
                         createExplosion(bullet.x, bullet.y, 10);
-
+                        
                         if (player.health <= 0) {
                             endGame();
                         }
@@ -1325,19 +1416,19 @@
                     }
                     return false;
                 }
-
+                
                 return bullet.y < canvas.height;
             });
 
             // パワーアップ
             gameState.powerUps = gameState.powerUps.filter(powerUp => {
                 powerUp.y += powerUp.vy;
-
+                
                 if (checkCollision(powerUp, player)) {
                     let notificationText = '';
                     let notificationColor = '';
-
-                    switch (powerUp.type) {
+                    
+                    switch(powerUp.type) {
                         case 'health':
                             player.health = Math.min(player.maxHealth, player.health + 30);
                             notificationText = '💚 体力回復 +30HP';
@@ -1365,23 +1456,23 @@
                             setTimeout(() => player.weapon = 'normal', 8000);
                             break;
                     }
-
+                    
                     // 通知を表示
                     const notification = document.getElementById('powerupNotification');
                     notification.textContent = notificationText;
                     notification.style.borderColor = notificationColor;
                     notification.style.color = notificationColor;
                     notification.classList.add('show');
-
+                    
                     setTimeout(() => {
                         notification.classList.remove('show');
                     }, 3000);
-
+                    
                     createParticles(powerUp.x, powerUp.y, '#0f0', 15);
                     updateUI();
                     return false;
                 }
-
+                
                 return powerUp.y < canvas.height;
             });
 
@@ -1403,10 +1494,10 @@
             let shouldMoveDown = false;
             gameState.invaders.forEach(invader => {
                 if (!invader.alive) return;
-
+                
                 invader.animFrame = (invader.animFrame + 0.1) % 2;
                 invader.x += gameState.invaderSpeed * gameState.invaderDirection;
-
+                
                 if (invader.x <= 0 || invader.x >= canvas.width - invader.width) {
                     shouldMoveDown = true;
                 }
@@ -1435,24 +1526,24 @@
                 gameState.invaders.forEach(invader => {
                     if (invader.alive && checkCollision(bullet, invader)) {
                         invader.alive = false;
-
+                        
                         const points = (invader.type + 1) * 10 * (gameState.combo + 1);
                         gameState.score += points;
                         gameState.combo++;
                         gameState.comboTimer = 60;
-
+                        
                         // 統計情報更新
                         gameState.stats.totalKills++;
                         if (gameState.combo > gameState.stats.maxCombo) {
                             gameState.stats.maxCombo = gameState.combo;
                         }
-
+                        
                         showCombo();
-
+                        
                         if (!bullet.laser) {
                             gameState.bullets.splice(bIndex, 1);
                         }
-
+                        
                         createExplosion(invader.x + invader.width / 2, invader.y + invader.height / 2, 20);
                         spawnPowerUp(invader.x + invader.width / 2, invader.y + invader.height / 2);
                         updateUI();
@@ -1476,13 +1567,13 @@
                 gameState.invaderSpeed += settings.invaderSpeedIncrease;
                 createInvaders();
                 gameState.score += gameState.wave * 100;
-
+                
                 // 新しいウェーブで初期遅延をリセット
                 gameState.invaderCanShoot = false;
                 setTimeout(() => {
                     gameState.invaderCanShoot = true;
                 }, settings.invaderInitialDelay);
-
+                
                 updateUI();
             }
         }
@@ -1504,7 +1595,7 @@
 
             // プレイヤー描画
             const player = gameState.player;
-
+            
             if (player.shield) {
                 ctx.strokeStyle = '#0ff';
                 ctx.lineWidth = 3;
@@ -1559,14 +1650,14 @@
                 ctx.save();
                 ctx.translate(powerUp.x + powerUp.width / 2, powerUp.y + powerUp.height / 2);
                 ctx.rotate(gameState.time * 0.05);
-
+                
                 const colors = {
                     health: '#0f0',
                     shield: '#0ff',
                     triple: '#ff0',
                     laser: '#f0f'
                 };
-
+                
                 ctx.fillStyle = colors[powerUp.type];
                 ctx.shadowBlur = 15;
                 ctx.shadowColor = colors[powerUp.type];
@@ -1581,16 +1672,16 @@
 
                 const colors = ['#f0f', '#ff0', '#0ff'];
                 ctx.fillStyle = colors[invader.type];
-
+                
                 const offset = Math.floor(invader.animFrame) * 5;
-
+                
                 // 本体
                 ctx.fillRect(invader.x + offset, invader.y + 10, invader.width - offset * 2, invader.height - 10);
-
+                
                 // 触角
                 ctx.fillRect(invader.x, invader.y, 8, 10);
                 ctx.fillRect(invader.x + invader.width - 8, invader.y, 8, 10);
-
+                
                 // 目
                 ctx.fillStyle = '#000';
                 ctx.fillRect(invader.x + 10, invader.y + 15, 6, 6);
@@ -1617,19 +1708,19 @@
             gameState.gameOver = true;
             document.getElementById('finalScore').textContent = gameState.score;
             document.getElementById('finalWave').textContent = gameState.wave;
-
+            
             // 統計情報表示
             document.getElementById('finalKills').textContent = gameState.stats.totalKills;
             document.getElementById('finalMaxCombo').textContent = gameState.stats.maxCombo;
             document.getElementById('finalWavesCleared').textContent = gameState.stats.wavesCleared;
-
+            
             // ハイスコア更新
             const highScoreKey = `highScore_${gameState.difficulty}`;
             const currentHighScore = localStorage.getItem(highScoreKey) || 0;
             const newHighScore = Math.max(currentHighScore, gameState.score);
             localStorage.setItem(highScoreKey, newHighScore);
             document.getElementById('highScore').textContent = newHighScore;
-
+            
             const difficultyNames = {
                 beginner: 'Lv.1 初級',
                 intermediate: 'Lv.2 中級',
@@ -1661,5 +1752,4 @@
         gameLoop();
     </script>
 </body>
-
 </html>
