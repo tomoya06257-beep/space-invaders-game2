@@ -344,14 +344,14 @@
         }
         .difficulty-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
             margin-top: 30px;
-            max-width: 700px;
+            max-width: 900px;
         }
         .difficulty-btn {
-            padding: 25px 15px;
-            font-size: 18px;
+            padding: 20px 12px;
+            font-size: 16px;
             border: 3px solid;
             border-radius: 15px;
             color: #fff;
@@ -387,11 +387,19 @@
             background: rgba(0, 255, 0, 0.2);
             box-shadow: 0 0 30px #0f0;
         }
-        .difficulty-intermediate {
+        .difficulty-easy {
+            border-color: #9f0;
+            color: #9f0;
+        }
+        .difficulty-easy:hover {
+            background: rgba(153, 255, 0, 0.2);
+            box-shadow: 0 0 30px #9f0;
+        }
+        .difficulty-normal {
             border-color: #ff0;
             color: #ff0;
         }
-        .difficulty-intermediate:hover {
+        .difficulty-normal:hover {
             background: rgba(255, 255, 0, 0.2);
             box-shadow: 0 0 30px #ff0;
         }
@@ -403,13 +411,13 @@
             background: rgba(255, 102, 0, 0.2);
             box-shadow: 0 0 30px #f60;
         }
-        .difficulty-extreme {
-            border-color: #f00;
-            color: #f00;
+        .difficulty-expert {
+            border-color: #f90;
+            color: #f90;
         }
-        .difficulty-extreme:hover {
-            background: rgba(255, 0, 0, 0.2);
-            box-shadow: 0 0 30px #f00;
+        .difficulty-expert:hover {
+            background: rgba(255, 153, 0, 0.2);
+            box-shadow: 0 0 30px #f90;
         }
         .difficulty-master {
             border-color: #a020f0;
@@ -419,6 +427,14 @@
             background: rgba(160, 32, 240, 0.2);
             box-shadow: 0 0 30px #a020f0;
         }
+        .difficulty-extreme {
+            border-color: #f0f;
+            color: #f0f;
+        }
+        .difficulty-extreme:hover {
+            background: rgba(255, 0, 255, 0.2);
+            box-shadow: 0 0 30px #f0f;
+        }
         .difficulty-nightmare {
             border-color: #8b00ff;
             color: #8b00ff;
@@ -426,6 +442,19 @@
         .difficulty-nightmare:hover {
             background: rgba(139, 0, 255, 0.2);
             box-shadow: 0 0 30px #8b00ff;
+        }
+        .difficulty-insane {
+            border-color: #f00;
+            color: #f00;
+            animation: insanePulse 1.5s infinite;
+        }
+        .difficulty-insane:hover {
+            background: rgba(255, 0, 0, 0.3);
+            box-shadow: 0 0 40px #f00;
+        }
+        @keyframes insanePulse {
+            0%, 100% { box-shadow: 0 0 10px #f00; }
+            50% { box-shadow: 0 0 25px #f00; }
         }
         .difficulty-hell {
             border-color: #ff0000;
@@ -755,11 +784,12 @@
             </div>
 
             <div class="tutorial-section">
-                <h2>🎚️ 難易度について</h2>
+                <h2>🎚️ 難易度について（全10段階）</h2>
                 <p style="line-height: 1.8;">
-                    <strong style="color: #0f0;">Lv.1-2（初級・中級）：</strong> ゲームに慣れるのに最適<br>
-                    <strong style="color: #ff0;">Lv.3-4（上級・超級）：</strong> 本格的な挑戦<br>
-                    <strong style="color: #f0f;">Lv.5-7（達人・悪夢・地獄）：</strong> 極限の難易度<br>
+                    <strong style="color: #0f0;">Lv.1-3（初級・簡単・普通）：</strong> 初心者におすすめ<br>
+                    <strong style="color: #ff0;">Lv.4-6（上級・熟練・達人）：</strong> 本格的な挑戦<br>
+                    <strong style="color: #f60;">Lv.7-8（超級・悪夢）：</strong> 上級者向け<br>
+                    <strong style="color: #f00;">Lv.9-10（狂気・地獄）：</strong> 極限の難易度<br>
                     <br>
                     難易度が上がると：<br>
                     • 敵の移動速度が増加<br>
@@ -784,39 +814,44 @@
             <h1>難易度を選択</h1>
             <div class="difficulty-grid">
                 <button class="difficulty-btn difficulty-beginner" onclick="startGame('beginner')">
-                    <div class="difficulty-title">🌟 Lv.1 初級</div>
-                    <div class="difficulty-desc">★☆☆☆☆☆☆<br>敵: 超遅い<br>攻撃: 超弱い</div>
-                    <div class="difficulty-level">入門者向け</div>
+                    <div class="difficulty-title">🌟 Lv.1</div>
+                    <div class="difficulty-desc">★☆☆☆☆☆☆☆☆☆<br>初級</div>
                 </button>
-                <button class="difficulty-btn difficulty-intermediate" onclick="startGame('intermediate')">
-                    <div class="difficulty-title">⚡ Lv.2 中級</div>
-                    <div class="difficulty-desc">★★☆☆☆☆☆<br>敵: 遅い<br>攻撃: 弱い</div>
-                    <div class="difficulty-level">初心者向け</div>
+                <button class="difficulty-btn difficulty-easy" onclick="startGame('easy')">
+                    <div class="difficulty-title">🌱 Lv.2</div>
+                    <div class="difficulty-desc">★★☆☆☆☆☆☆☆☆<br>簡単</div>
+                </button>
+                <button class="difficulty-btn difficulty-normal" onclick="startGame('normal')">
+                    <div class="difficulty-title">⚡ Lv.3</div>
+                    <div class="difficulty-desc">★★★☆☆☆☆☆☆☆<br>普通</div>
                 </button>
                 <button class="difficulty-btn difficulty-advanced" onclick="startGame('advanced')">
-                    <div class="difficulty-title">🔥 Lv.3 上級</div>
-                    <div class="difficulty-desc">★★★☆☆☆☆<br>敵: 普通<br>攻撃: 普通</div>
-                    <div class="difficulty-level">標準</div>
+                    <div class="difficulty-title">🔥 Lv.4</div>
+                    <div class="difficulty-desc">★★★★☆☆☆☆☆☆<br>上級</div>
                 </button>
-                <button class="difficulty-btn difficulty-extreme" onclick="startGame('extreme')">
-                    <div class="difficulty-title">💀 Lv.4 超級</div>
-                    <div class="difficulty-desc">★★★★☆☆☆<br>敵: 速い<br>攻撃: 強い</div>
-                    <div class="difficulty-level">熟練者向け</div>
+                <button class="difficulty-btn difficulty-expert" onclick="startGame('expert')">
+                    <div class="difficulty-title">⚔️ Lv.5</div>
+                    <div class="difficulty-desc">★★★★★☆☆☆☆☆<br>熟練</div>
                 </button>
                 <button class="difficulty-btn difficulty-master" onclick="startGame('master')">
-                    <div class="difficulty-title">👑 Lv.5 達人</div>
-                    <div class="difficulty-desc">★★★★★☆☆<br>敵: かなり速い<br>攻撃: かなり強い</div>
-                    <div class="difficulty-level">上級者向け</div>
+                    <div class="difficulty-title">👑 Lv.6</div>
+                    <div class="difficulty-desc">★★★★★★☆☆☆☆<br>達人</div>
+                </button>
+                <button class="difficulty-btn difficulty-extreme" onclick="startGame('extreme')">
+                    <div class="difficulty-title">💀 Lv.7</div>
+                    <div class="difficulty-desc">★★★★★★★☆☆☆<br>超級</div>
                 </button>
                 <button class="difficulty-btn difficulty-nightmare" onclick="startGame('nightmare')">
-                    <div class="difficulty-title">😈 Lv.6 悪夢</div>
-                    <div class="difficulty-desc">★★★★★★☆<br>敵: 超速い<br>攻撃: 超強い</div>
-                    <div class="difficulty-level">エキスパート</div>
+                    <div class="difficulty-title">😈 Lv.8</div>
+                    <div class="difficulty-desc">★★★★★★★★☆☆<br>悪夢</div>
+                </button>
+                <button class="difficulty-btn difficulty-insane" onclick="startGame('insane')">
+                    <div class="difficulty-title">🌀 Lv.9</div>
+                    <div class="difficulty-desc">★★★★★★★★★☆<br>狂気</div>
                 </button>
                 <button class="difficulty-btn difficulty-hell" onclick="startGame('hell')">
-                    <div class="difficulty-title">🔥💀 Lv.7 地獄</div>
-                    <div class="difficulty-desc">★★★★★★★<br>敵: 極速<br>攻撃: 極強</div>
-                    <div class="difficulty-level">神の領域</div>
+                    <div class="difficulty-title">🔥💀 Lv.10</div>
+                    <div class="difficulty-desc">★★★★★★★★★★<br>地獄</div>
                 </button>
             </div>
             <button class="btn" onclick="backToStart()" style="margin-top: 30px; font-size: 16px;">戻る</button>
@@ -919,7 +954,7 @@
             combo: 0,
             comboTimer: 0,
             time: 0,
-            difficulty: 'intermediate',
+            difficulty: 'normal',
             // 統計情報
             stats: {
                 totalKills: 0,
@@ -929,32 +964,48 @@
             controlHintsShown: false
         };
 
-        // 難易度設定（7段階）
+        // 難易度設定（10段階）
         const difficultySettings = {
             beginner: {
                 name: '初級',
                 level: 1,
-                stars: '★☆☆☆☆☆☆',
-                invaderBaseSpeed: 0.2,
+                stars: '★☆☆☆☆☆☆☆☆☆',
+                invaderBaseSpeed: 0.15,
+                invaderSpeedIncrease: 0.08,
+                invaderShootFrequency: 250,
+                invaderInitialDelay: 4000,
+                bulletSpeed: 1.2,
+                bulletSpeedIncrease: 0.05,
+                powerUpChance: 0.35,
+                initialRows: 2,
+                maxRows: 4,
+                playerSpeed: 7,
+                enemyDamage: 4
+            },
+            easy: {
+                name: '簡単',
+                level: 2,
+                stars: '★★☆☆☆☆☆☆☆☆',
+                invaderBaseSpeed: 0.25,
                 invaderSpeedIncrease: 0.1,
                 invaderShootFrequency: 200,
-                invaderInitialDelay: 3000, // 最初の3秒は攻撃しない
+                invaderInitialDelay: 3000,
                 bulletSpeed: 1.5,
-                bulletSpeedIncrease: 0.05,
+                bulletSpeedIncrease: 0.08,
                 powerUpChance: 0.3,
                 initialRows: 2,
                 maxRows: 4,
                 playerSpeed: 7,
                 enemyDamage: 5
             },
-            intermediate: {
-                name: '中級',
-                level: 2,
-                stars: '★★☆☆☆☆☆',
+            normal: {
+                name: '普通',
+                level: 3,
+                stars: '★★★☆☆☆☆☆☆☆',
                 invaderBaseSpeed: 0.35,
                 invaderSpeedIncrease: 0.15,
                 invaderShootFrequency: 150,
-                invaderInitialDelay: 2000, // 最初の2秒は攻撃しない
+                invaderInitialDelay: 2000,
                 bulletSpeed: 2,
                 bulletSpeedIncrease: 0.1,
                 powerUpChance: 0.25,
@@ -965,8 +1016,8 @@
             },
             advanced: {
                 name: '上級',
-                level: 3,
-                stars: '★★★☆☆☆☆',
+                level: 4,
+                stars: '★★★★☆☆☆☆☆☆',
                 invaderBaseSpeed: 0.5,
                 invaderSpeedIncrease: 0.2,
                 invaderShootFrequency: 120,
@@ -979,17 +1030,17 @@
                 playerSpeed: 6,
                 enemyDamage: 10
             },
-            extreme: {
-                name: '超級',
-                level: 4,
-                stars: '★★★★☆☆☆',
-                invaderBaseSpeed: 0.7,
-                invaderSpeedIncrease: 0.3,
-                invaderShootFrequency: 90,
-                invaderInitialDelay: 1000,
+            expert: {
+                name: '熟練',
+                level: 5,
+                stars: '★★★★★☆☆☆☆☆',
+                invaderBaseSpeed: 0.65,
+                invaderSpeedIncrease: 0.25,
+                invaderShootFrequency: 100,
+                invaderInitialDelay: 1200,
                 bulletSpeed: 3,
-                bulletSpeedIncrease: 0.2,
-                powerUpChance: 0.15,
+                bulletSpeedIncrease: 0.18,
+                powerUpChance: 0.18,
                 initialRows: 4,
                 maxRows: 6,
                 playerSpeed: 6.5,
@@ -997,51 +1048,83 @@
             },
             master: {
                 name: '達人',
-                level: 5,
-                stars: '★★★★★☆☆',
-                invaderBaseSpeed: 0.9,
-                invaderSpeedIncrease: 0.4,
-                invaderShootFrequency: 70,
-                invaderInitialDelay: 500,
+                level: 6,
+                stars: '★★★★★★☆☆☆☆',
+                invaderBaseSpeed: 0.8,
+                invaderSpeedIncrease: 0.3,
+                invaderShootFrequency: 80,
+                invaderInitialDelay: 1000,
                 bulletSpeed: 3.5,
+                bulletSpeedIncrease: 0.2,
+                powerUpChance: 0.15,
+                initialRows: 5,
+                maxRows: 7,
+                playerSpeed: 7,
+                enemyDamage: 14
+            },
+            extreme: {
+                name: '超級',
+                level: 7,
+                stars: '★★★★★★★☆☆☆',
+                invaderBaseSpeed: 1.0,
+                invaderSpeedIncrease: 0.4,
+                invaderShootFrequency: 65,
+                invaderInitialDelay: 800,
+                bulletSpeed: 4,
                 bulletSpeedIncrease: 0.25,
                 powerUpChance: 0.12,
                 initialRows: 5,
                 maxRows: 7,
-                playerSpeed: 7,
-                enemyDamage: 15
+                playerSpeed: 7.5,
+                enemyDamage: 16
             },
             nightmare: {
                 name: '悪夢',
-                level: 6,
-                stars: '★★★★★★☆',
-                invaderBaseSpeed: 1.1,
+                level: 8,
+                stars: '★★★★★★★★☆☆',
+                invaderBaseSpeed: 1.2,
                 invaderSpeedIncrease: 0.5,
                 invaderShootFrequency: 50,
-                invaderInitialDelay: 0,
-                bulletSpeed: 4,
+                invaderInitialDelay: 500,
+                bulletSpeed: 4.5,
                 bulletSpeedIncrease: 0.3,
                 powerUpChance: 0.1,
-                initialRows: 5,
-                maxRows: 7,
-                playerSpeed: 7.5,
-                enemyDamage: 18
-            },
-            hell: {
-                name: '地獄',
-                level: 7,
-                stars: '★★★★★★★',
-                invaderBaseSpeed: 1.4,
-                invaderSpeedIncrease: 0.6,
-                invaderShootFrequency: 40,
-                invaderInitialDelay: 0,
-                bulletSpeed: 5,
-                bulletSpeedIncrease: 0.4,
-                powerUpChance: 0.08,
                 initialRows: 6,
                 maxRows: 8,
                 playerSpeed: 8,
+                enemyDamage: 18
+            },
+            insane: {
+                name: '狂気',
+                level: 9,
+                stars: '★★★★★★★★★☆',
+                invaderBaseSpeed: 1.4,
+                invaderSpeedIncrease: 0.6,
+                invaderShootFrequency: 40,
+                invaderInitialDelay: 300,
+                bulletSpeed: 5,
+                bulletSpeedIncrease: 0.35,
+                powerUpChance: 0.08,
+                initialRows: 6,
+                maxRows: 8,
+                playerSpeed: 8.5,
                 enemyDamage: 20
+            },
+            hell: {
+                name: '地獄',
+                level: 10,
+                stars: '★★★★★★★★★★',
+                invaderBaseSpeed: 1.6,
+                invaderSpeedIncrease: 0.7,
+                invaderShootFrequency: 30,
+                invaderInitialDelay: 0,
+                bulletSpeed: 5.5,
+                bulletSpeedIncrease: 0.4,
+                powerUpChance: 0.06,
+                initialRows: 7,
+                maxRows: 9,
+                playerSpeed: 9,
+                enemyDamage: 25
             }
         };
 
@@ -1142,7 +1225,7 @@
             document.getElementById('startScreen').style.display = 'block';
         }
 
-        function startGame(difficulty = 'intermediate') {
+        function startGame(difficulty = 'normal') {
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('difficultyScreen').style.display = 'none';
             document.getElementById('gameOver').style.display = 'none';
@@ -1723,12 +1806,15 @@
             
             const difficultyNames = {
                 beginner: 'Lv.1 初級',
-                intermediate: 'Lv.2 中級',
-                advanced: 'Lv.3 上級',
-                extreme: 'Lv.4 超級',
-                master: 'Lv.5 達人',
-                nightmare: 'Lv.6 悪夢',
-                hell: 'Lv.7 地獄'
+                easy: 'Lv.2 簡単',
+                normal: 'Lv.3 普通',
+                advanced: 'Lv.4 上級',
+                expert: 'Lv.5 熟練',
+                master: 'Lv.6 達人',
+                extreme: 'Lv.7 超級',
+                nightmare: 'Lv.8 悪夢',
+                insane: 'Lv.9 狂気',
+                hell: 'Lv.10 地獄'
             };
             document.getElementById('finalDifficulty').textContent = difficultyNames[gameState.difficulty];
             document.getElementById('gameOver').style.display = 'block';
