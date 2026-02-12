@@ -1273,6 +1273,7 @@
             }
         };
 
+        // キーボード入力状態
         const keys = {};
         
         // モバイル検出
@@ -1377,6 +1378,9 @@
             
             const settings = difficultySettings[difficulty];
             
+            // 星の配列を保持
+            const preservedStars = gameState.stars || [];
+            
             gameState = {
                 player: {
                     x: 375,
@@ -1395,7 +1399,7 @@
                 invaderBullets: [],
                 particles: [],
                 powerUps: [],
-                stars: gameState.stars,
+                stars: preservedStars,
                 score: 0,
                 wave: 1,
                 gameOver: false,
