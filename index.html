@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
     <!-- SEO基本情報 -->
     <title>スペースインベーダー ULTIMATE - 無料ブラウザゲーム | 7段階難易度</title>
@@ -42,16 +42,91 @@
             font-family: 'Orbitron', 'Arial', sans-serif;
             color: #fff;
             overflow: hidden;
+            margin: 0;
+            padding: 0;
         }
         #gameContainer {
             position: relative;
             box-shadow: 0 0 50px rgba(0, 255, 255, 0.5);
+            max-width: 100vw;
+            max-height: 100vh;
         }
         canvas {
             display: block;
             background: #000;
             border: 3px solid #0ff;
             box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+        }
+        
+        /* モバイル対応：横画面 */
+        @media (max-width: 896px) and (orientation: landscape) {
+            body {
+                justify-content: flex-start;
+                padding: 5px 0;
+            }
+            #gameContainer {
+                max-height: 95vh;
+            }
+            canvas {
+                height: 95vh;
+                width: auto;
+            }
+            #ui {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+            .stat {
+                font-size: 14px;
+            }
+            #healthBar {
+                width: 100px;
+                height: 15px;
+            }
+        }
+        
+        /* モバイル対応：縦画面 */
+        @media (max-width: 768px) and (orientation: portrait) {
+            #gameContainer {
+                max-width: 100vw;
+                max-height: 100vh;
+            }
+            canvas {
+                width: 100vw;
+                height: auto;
+            }
+            #ui {
+                padding: 10px 10px;
+                font-size: 12px;
+            }
+            .stat {
+                font-size: 12px;
+                gap: 5px;
+            }
+            #healthBar {
+                width: 80px;
+                height: 12px;
+            }
+            #permanentControls {
+                display: none;
+            }
+        }
+        
+        /* iPhone特化の調整 */
+        @media only screen 
+        and (min-device-width: 375px) 
+        and (max-device-width: 896px) 
+        and (-webkit-min-device-pixel-ratio: 2) {
+            body {
+                -webkit-overflow-scrolling: touch;
+            }
+            canvas {
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+            }
         }
         #ui {
             position: absolute;
@@ -245,6 +320,7 @@
             justify-content: space-between;
             padding: 0 20px;
             pointer-events: none;
+            z-index: 50;
         }
         #mobileControls.show {
             display: flex;
@@ -268,6 +344,7 @@
             font-weight: bold;
             user-select: none;
             -webkit-user-select: none;
+            -webkit-touch-callout: none;
             touch-action: manipulation;
             transition: all 0.1s;
         }
@@ -284,6 +361,42 @@
         }
         .mobile-shoot-btn:active {
             background: rgba(255, 0, 255, 0.6);
+        }
+        
+        /* 横画面時のボタン調整 */
+        @media (max-width: 896px) and (orientation: landscape) {
+            #mobileControls {
+                bottom: 10px;
+                padding: 0 10px;
+            }
+            .mobile-btn {
+                width: 55px;
+                height: 55px;
+                font-size: 20px;
+            }
+            .mobile-shoot-btn {
+                width: 65px;
+                height: 65px;
+                font-size: 14px;
+            }
+        }
+        
+        /* 縦画面時のボタン調整 */
+        @media (max-width: 768px) and (orientation: portrait) {
+            #mobileControls {
+                bottom: 15px;
+                padding: 0 15px;
+            }
+            .mobile-btn {
+                width: 65px;
+                height: 65px;
+                font-size: 22px;
+            }
+            .mobile-shoot-btn {
+                width: 75px;
+                height: 75px;
+                font-size: 15px;
+            }
         }
         /* 操作説明（常時表示・右上） */
         #permanentControls {
@@ -923,6 +1036,38 @@
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        
+        // レスポンシブ対応：画面サイズに応じてキャンバスサイズを調整
+        function adjustCanvasSize() {
+            const container = document.getElementById('gameContainer');
+            const isLandscape = window.innerWidth > window.innerHeight;
+            const isMobileDevice = isMobile;
+            
+            if (isMobileDevice) {
+                if (isLandscape) {
+                    // 横画面：高さを基準に
+                    const maxHeight = window.innerHeight * 0.95;
+                    const ratio = 800 / 700; // 元の比率
+                    canvas.style.height = maxHeight + 'px';
+                    canvas.style.width = (maxHeight * ratio) + 'px';
+                } else {
+                    // 縦画面：幅を基準に
+                    const maxWidth = window.innerWidth;
+                    const ratio = 700 / 800; // 元の比率（逆）
+                    canvas.style.width = maxWidth + 'px';
+                    canvas.style.height = (maxWidth * ratio) + 'px';
+                }
+            }
+        }
+        
+        // 初期サイズ調整
+        adjustCanvasSize();
+        
+        // 画面回転・リサイズ時に再調整
+        window.addEventListener('resize', adjustCanvasSize);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(adjustCanvasSize, 100);
+        });
 
         // ゲーム状態
         let gameState = {
@@ -1274,7 +1419,7 @@
             createInvaders();
             updateUI();
             
-            // ゲーム開始シーケンス
+            // ゲーム開始シーケンス（改善版）
             // 1. 操作ヒントを5秒間表示
             document.getElementById('controlHints').classList.add('show');
             document.getElementById('startOverlay').classList.add('show');
@@ -1282,17 +1427,19 @@
             setTimeout(() => {
                 // 2. 操作ヒントを非表示
                 document.getElementById('controlHints').classList.remove('show');
-                gameState.controlHintsShown = true;
                 
-                // 3. 1秒待ってからゲーム開始
+                // 3. 2秒待ってオーバーレイを非表示
                 setTimeout(() => {
                     document.getElementById('startOverlay').classList.remove('show');
                     
-                    // 4. 敵の初期攻撃遅延を開始
+                    // 4. オーバーレイが完全に消えてから敵の攻撃開始
+                    // （CSSトランジション0.5秒 + 余裕0.5秒 = 1秒後）
                     setTimeout(() => {
-                        gameState.invaderCanShoot = true;
-                    }, settings.invaderInitialDelay);
-                }, 1000);
+                        setTimeout(() => {
+                            gameState.invaderCanShoot = true;
+                        }, settings.invaderInitialDelay);
+                    }, 1000);
+                }, 2000);
             }, 5000);
         }
 
